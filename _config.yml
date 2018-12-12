@@ -78,4 +78,6 @@ theme: huno
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: git
+  repository: https://github.com/SSLoong/sunshenglong.github.io
+  branch: master
