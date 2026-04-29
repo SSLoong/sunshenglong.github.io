@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/all.min.css" integrity="sha256-2H3fkXt6FEmrReK448mDVGKb3WW2ZZw35gI7vqHOE4Y=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","version":"8.6.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<meta name="description" content="2026年重新开始写技术博客：我的AI编程工作流实践距离上一次认真更新博客，已经过去了很久。 中间并不是没有新的技术输入，也不是没有值得记录的东西。相反，这几年工具、框架、开发方式都变化得很快，尤其是 AI 编程工具出现之后，很多原来习以为常的开发流程都被重新改写了。只是越忙越容易把“记录”这件事往后放，最后博客就慢慢停在了某个时间点。 今天重新打开这个 Hexo 博客，整理配置、补文档、检查部">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026年重新开始写技术博客：我的AI编程工作流实践">
+<meta property="og:url" content="https://devloong.com/2026/04/29/2026%E5%B9%B4%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B%E5%86%99%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%9A%E6%88%91%E7%9A%84AI%E7%BC%96%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="2026年重新开始写技术博客：我的AI编程工作流实践距离上一次认真更新博客，已经过去了很久。 中间并不是没有新的技术输入，也不是没有值得记录的东西。相反，这几年工具、框架、开发方式都变化得很快，尤其是 AI 编程工具出现之后，很多原来习以为常的开发流程都被重新改写了。只是越忙越容易把“记录”这件事往后放，最后博客就慢慢停在了某个时间点。 今天重新打开这个 Hexo 博客，整理配置、补文档、检查部">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/ai-programming-workflow-2026.png">
+<meta property="article:published_time" content="2026-04-29T14:30:00.000Z">
+<meta property="article:modified_time" content="2026-04-29T14:39:57.715Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="AI编程">
+<meta property="article:tag" content="工作流">
+<meta property="article:tag" content="技术博客">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/ai-programming-workflow-2026.png">
+
+
+<link rel="canonical" href="https://devloong.com/2026/04/29/2026%E5%B9%B4%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B%E5%86%99%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%9A%E6%88%91%E7%9A%84AI%E7%BC%96%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%AE%9E%E8%B7%B5/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/04/29/2026%E5%B9%B4%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B%E5%86%99%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%9A%E6%88%91%E7%9A%84AI%E7%BC%96%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%AE%9E%E8%B7%B5/","path":"2026/04/29/2026年重新开始写技术博客：我的AI编程工作流实践/","title":"2026年重新开始写技术博客：我的AI编程工作流实践"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026年重新开始写技术博客：我的AI编程工作流实践 | Loong's Blog</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Loong's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#2026%E5%B9%B4%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B%E5%86%99%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%9A%E6%88%91%E7%9A%84AI%E7%BC%96%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%AE%9E%E8%B7%B5"><span class="nav-number">1.</span> <span class="nav-text">2026年重新开始写技术博客：我的AI编程工作流实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%8E%B0%E5%9C%A8%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B"><span class="nav-number">1.1.</span> <span class="nav-text">为什么现在重新开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%91%E7%8E%B0%E5%9C%A8%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8-AI-%E8%BE%85%E5%8A%A9%E5%BC%80%E5%8F%91"><span class="nav-number">1.2.</span> <span class="nav-text">我现在如何使用 AI 辅助开发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AI-%E9%80%82%E5%90%88%E5%81%9A%E4%BB%80%E4%B9%88%EF%BC%8C%E4%B8%8D%E9%80%82%E5%90%88%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-number">1.3.</span> <span class="nav-text">AI 适合做什么，不适合做什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%91%E7%9A%84%E4%B8%80%E4%B8%AA%E5%AE%9E%E8%B7%B5%E5%8E%9F%E5%88%99"><span class="nav-number">1.4.</span> <span class="nav-text">我的一个实践原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%E6%8E%A5%E4%B8%8B%E6%9D%A5%E5%86%99%E4%BB%80%E4%B9%88"><span class="nav-number">1.5.</span> <span class="nav-text">技术博客接下来写什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">1.6.</span> <span class="nav-text">写在最后</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-overview">
+            <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/04/29/2026%E5%B9%B4%E9%87%8D%E6%96%B0%E5%BC%80%E5%A7%8B%E5%86%99%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2%EF%BC%9A%E6%88%91%E7%9A%84AI%E7%BC%96%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026年重新开始写技术博客：我的AI编程工作流实践
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-04-29 22:30:00 / 修改时间：22:39:57" itemprop="dateCreated datePublished" datetime="2026-04-29T22:30:00+08:00">2026-04-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">技术实践</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><img src="/images/ai-programming-workflow-2026.png" alt="AI 编程工作流"></p>
+<h1 id="2026年重新开始写技术博客：我的AI编程工作流实践"><a href="#2026年重新开始写技术博客：我的AI编程工作流实践" class="headerlink" title="2026年重新开始写技术博客：我的AI编程工作流实践"></a>2026年重新开始写技术博客：我的AI编程工作流实践</h1><p>距离上一次认真更新博客，已经过去了很久。</p>
+<p>中间并不是没有新的技术输入，也不是没有值得记录的东西。相反，这几年工具、框架、开发方式都变化得很快，尤其是 AI 编程工具出现之后，很多原来习以为常的开发流程都被重新改写了。只是越忙越容易把“记录”这件事往后放，最后博客就慢慢停在了某个时间点。</p>
+<p>今天重新打开这个 Hexo 博客，整理配置、补文档、检查部署流程的时候，我突然觉得：与其等到准备好一整套宏大的内容计划，不如先写下一篇真实的、和当下工作方式有关的文章。</p>
+<p>这篇文章就从我现在的 AI 编程工作流开始。</p>
+<span id="more"></span>
+
+<h2 id="为什么现在重新开始"><a href="#为什么现在重新开始" class="headerlink" title="为什么现在重新开始"></a>为什么现在重新开始</h2><p>以前写技术博客，更多是为了系统整理知识。比如学一门语言、读一个框架、解决一个问题，然后把过程整理成文章。这个模式当然仍然有效，但现在我更想记录的是“真实开发过程中的判断”。</p>
+<p>因为 AI 工具让写代码变快了，但也让工程判断变得更重要了。</p>
+<p>现在的问题不再只是“这段代码怎么写”，而是：</p>
+<ul>
+<li>这个需求应该拆成什么粒度？</li>
+<li>哪些部分可以交给 AI 快速完成？</li>
+<li>哪些地方必须自己审查和兜底？</li>
+<li>生成的代码是否符合项目原有风格？</li>
+<li>测试、文档和部署流程有没有跟上？</li>
+</ul>
+<p>这些问题很难靠一段提示词一次性解决。它们更像是一套持续运行的工作流。</p>
+<h2 id="我现在如何使用-AI-辅助开发"><a href="#我现在如何使用-AI-辅助开发" class="headerlink" title="我现在如何使用 AI 辅助开发"></a>我现在如何使用 AI 辅助开发</h2><p>我会把 AI 当成一个高效的协作者，而不是一个完全自动驾驶的程序员。</p>
+<p>在开始一个任务之前，我通常先让 AI 帮我做三件事：阅读项目结构、找出关键文件、总结现有约定。比如一个老项目很久没动，第一步不是马上改代码，而是先确认它用的框架、脚本、目录结构、生成产物和部署方式。</p>
+<p>这一步看起来慢，其实是在避免后面的返工。</p>
+<p>当项目上下文清楚之后，我会把任务拆成几个具体动作：</p>
+<ol>
+<li>先确认目标和边界。</li>
+<li>再让 AI 修改小范围文件。</li>
+<li>修改后立刻检查 diff。</li>
+<li>能跑测试就跑测试，不能跑测试也要做本地构建或预览。</li>
+<li>最后再整理提交说明和后续注意事项。</li>
+</ol>
+<p>在这个过程中，AI 最擅长的是加速“已有模式下的执行”。比如补一个文档、写一个模板、根据现有代码风格扩展一个功能、总结错误日志、生成初版测试用例。这些事情如果完全手写，可能会消耗不少时间；交给 AI 起草，再由自己审查，会轻松很多。</p>
+<p>但我不会把所有判断都交给 AI。</p>
+<h2 id="AI-适合做什么，不适合做什么"><a href="#AI-适合做什么，不适合做什么" class="headerlink" title="AI 适合做什么，不适合做什么"></a>AI 适合做什么，不适合做什么</h2><p>AI 很适合做明确、局部、可验证的任务。</p>
+<p>比如：</p>
+<ul>
+<li>根据现有代码补充文档。</li>
+<li>按项目风格生成一个组件初稿。</li>
+<li>分析报错信息并给出排查方向。</li>
+<li>把一段重复逻辑整理成更清晰的结构。</li>
+<li>为已有函数补测试用例。</li>
+</ul>
+<p>这些任务的共同点是：上下文明确，结果可以检查。</p>
+<p>AI 不太适合在缺少约束时直接替你做架构决策。尤其是老项目、线上项目、多人协作项目，很多约定并不写在代码里，而是藏在历史原因、部署流程和使用习惯里。AI 可以提供建议，但最终还是需要开发者判断取舍。</p>
+<p>我现在更倾向于把 AI 放在“副驾驶”的位置：它负责提高速度，我负责方向、边界和质量。</p>
+<h2 id="我的一个实践原则"><a href="#我的一个实践原则" class="headerlink" title="我的一个实践原则"></a>我的一个实践原则</h2><p>最近我给自己定了一个很简单的原则：</p>
+<blockquote>
+<p>凡是 AI 生成的内容，都必须经过人类可解释的验证。</p>
+</blockquote>
+<p>代码要能解释为什么这么改，文档要能对应项目事实，命令要能在本地跑通，页面要能实际打开看效果。不能因为“看起来像是对的”就直接接受。</p>
+<p>这个原则听起来保守，但它能让 AI 真正进入工程流程，而不是变成一个偶尔带来惊喜、偶尔制造混乱的工具。</p>
+<h2 id="技术博客接下来写什么"><a href="#技术博客接下来写什么" class="headerlink" title="技术博客接下来写什么"></a>技术博客接下来写什么</h2><p>重新开始之后，我不想把博客写成很重的负担。更现实的方式是围绕自己正在做的事情持续记录。</p>
+<p>接下来可能会写这些方向：</p>
+<ul>
+<li>AI 编程工具在真实项目中的使用记录。</li>
+<li>iOS、Swift 和客户端工程实践。</li>
+<li>老项目维护、依赖升级和部署流程整理。</li>
+<li>个人知识管理和技术写作方法。</li>
+<li>一些小而具体的问题排查复盘。</li>
+</ul>
+<p>每篇文章不一定都很长，但要尽量真实、有上下文、有结论。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>这篇文章算是一个重新开始的标记。</p>
+<p>技术博客最难的地方，往往不是搭建，也不是部署，而是持续把自己的思考留下来。AI 可以帮我更快地整理资料、生成初稿、检查结构，但真正决定文章价值的，仍然是我是否认真经历、认真判断、认真复盘。</p>
+<p>希望下一次更新，不会再隔这么久。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag"># AI编程</a>
+              <a href="/tags/%E5%B7%A5%E4%BD%9C%E6%B5%81/" rel="tag"># 工作流</a>
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2/" rel="tag"># 技术博客</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/07/31/Dart%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E4%B8%89%EF%BC%9A%E8%BF%90%E7%AE%97%E7%AC%A6/" rel="prev" title="Dart语言基础三：运算符">
+                  <i class="fa fa-chevron-left"></i> Dart语言基础三：运算符
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js","integrity":"sha256-Pmj85ojLaPOWwRtlMJwmezB/Qg8BzvJp5eTzvXaYAfA="},"path_md5":"4108966659b69e330a2409c11a4ab327"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
