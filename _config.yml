@@ -128,3 +128,53 @@ deploy:
   type: git
   repo: https://github.com/SSLoong/sunshenglong.github.io.git
   branch: master
+
+# NexT theme overrides. Keep custom theme settings here so the source branch
+# can rebuild the site without relying on untracked changes inside themes/next.
+theme_config:
+  scheme: Pisces
+  favicon:
+    small: /images/favicon-16x16.png
+    medium: /images/favicon-32x32.png
+    apple_touch_icon: /images/apple-touch-icon-next.png
+    safari_pinned_tab: /images/logo-mine.svg
+  menu:
+    home: / || fa fa-home
+    about: /about/ || fa fa-user
+    tags: /tags/ || fa fa-tags
+    categories: /categories/ || fa fa-th
+    archives: /archives/ || fa fa-archive
+  auto_excerpt:
+    enable: true
+    length: 150
+  avatar:
+    url: /images/icon.jpeg
+    rounded: true
+    rotated: true
+  social:
+    GitHub: https://github.com/SSLoong || fab fa-github
+    Weibo: https://weibo.com/u/5043118685 || fab fa-weibo
+  social_icons:
+    enable: true
+    icons_only: false
+    transition: true
+  github_banner:
+    enable: false
+    permalink: https://github.com/SSLoong
+    title: Follow me on GitHub
+  comments:
+    active: gitalk
+    storage: true
+  gitalk:
+    enable: true
+    github_id: SSLoong
+    repo: blog-comments
+    client_id: Ov23liv7PxlsFOW0hJb5
+    client_secret: a01e6c6817e6a0c9b0025a23dff6b69f940e1d29
+    admin_user: SSLoong
+    distraction_free_mode: true
+    proxy: https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token
+    language: zh-CN
+  local_search:
+    enable: true
+    trigger: auto
