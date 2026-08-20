@@ -101,10 +101,10 @@ theme: next
 
 # local search
 search:
-path: search.xml
-field: post
-format: html
-limit: 10000
+  path: search.json
+  field: post
+  content: true
+  format: striptags
 
 live2d:
   enable: true
@@ -133,6 +133,26 @@ deploy:
 # can rebuild the site without relying on untracked changes inside themes/next.
 theme_config:
   scheme: Pisces
+  darkmode: auto
+  reading_progress:
+    enable: true
+    start: top
+    position: fixed
+    reversed: false
+    color: "#37c6f0"
+    height: 3px
+  bookmark:
+    enable: true
+    color: "#fc6423"
+    save: auto
+  codeblock:
+    copy_button:
+      enable: always
+      style: mac
+      show_result: true
+  back_to_top:
+    enable: true
+  sidebar_position: left
   favicon:
     small: /images/favicon-16x16.png
     medium: /images/favicon-32x32.png
