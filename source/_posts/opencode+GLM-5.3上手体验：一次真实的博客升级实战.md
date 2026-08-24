@@ -13,6 +13,8 @@ tags:
 
 这次的"小白鼠"是我自己这个博客：一个 2021 年之后就没动过的 Hexo 5.4 + NexT 8.6 老站点。而干活的，是 opencode 终端里的 GLM-5.3。
 
+![AI Agent 升级旧博客的工作流示意图](/images/opencode-glm-hero.png)
+
 <!--more-->
 
 ## 先说说工具本身
