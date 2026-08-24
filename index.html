@@ -168,18 +168,18 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">7</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -204,6 +204,94 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Loong's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/" class="post-title-link" itemprop="url">把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-08-24 21:00:00 / 修改时间：17:04:37" itemprop="dateCreated datePublished" datetime="2026-08-24T21:00:00+08:00">2026-08-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>最近 DeepSeek 开源了 <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>。它的官方主路径是 <code>npx @deepseek-ai/dsh web</code>：启动本地 Web UI，而不是提供一个类似传统 REPL 的终端对话界面。但顺着源码走一遍会发现，它更像一个 Agent 运行时：<code>dsh</code> 命令负责启动 profile、管理插件和导出配置，Web UI 则是其中一个前端，真正的核心是如何把模型、工具、会话、沙箱、记忆和调度组织起来。</p>
+<p>这篇文章基于仓库 <code>b150a551b8d4</code>（2026-08-21，<code>0.1.1-rc.2</code>）阅读。项目仍处于 Developer Preview，目录和接口迭代很快；因此本文讨论的是它的设计方法，而不是保证长期稳定的 API 教程。</p>
+<p><img src="/images/deepseek-harness-hero.png" alt="DeepSeek Harness 模块化 Agent 架构示意图"></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -241,9 +329,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-08-20 23:00:00 / 修改时间：22:52:41" itemprop="dateCreated datePublished" datetime="2026-08-20T23:00:00+08:00">2026-08-20</time>
+      <time title="创建时间：2026-08-20 23:00:00" itemprop="dateCreated datePublished" datetime="2026-08-20T23:00:00+08:00">2026-08-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-08-24 17:04:37" itemprop="dateModified" datetime="2026-08-24T17:04:37+08:00">2026-08-24</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -267,6 +361,7 @@
     <div class="post-body" itemprop="articleBody">
           <p>上一篇博客写了我现在的 AI 编程工作流，里面有一个观点：AI 工具让写代码变快了，但工程判断变得更重要了。这篇文章就是一次完整实战——顺便也当一次工具评测。</p>
 <p>这次的”小白鼠”是我自己这个博客：一个 2021 年之后就没动过的 Hexo 5.4 + NexT 8.6 老站点。而干活的，是 opencode 终端里的 GLM-5.3。</p>
+<p><img src="/images/opencode-glm-hero.png" alt="AI Agent 升级旧博客的工作流示意图"></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2026/08/20/opencode+GLM-5.3%E4%B8%8A%E6%89%8B%E4%BD%93%E9%AA%8C%EF%BC%9A%E4%B8%80%E6%AC%A1%E7%9C%9F%E5%AE%9E%E7%9A%84%E5%8D%9A%E5%AE%A2%E5%8D%87%E7%BA%A7%E5%AE%9E%E6%88%98/#more" rel="contents">

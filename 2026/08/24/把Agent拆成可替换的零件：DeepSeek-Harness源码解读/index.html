@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="最近 DeepSeek 开源了 DeepSeek Harness。它的官方主路径是 npx @deepseek-ai&#x2F;dsh web：启动本地 Web UI，而不是提供一个类似传统 REPL 的终端对话界面。但顺着源码走一遍会发现，它更像一个 Agent 运行时：dsh 命令负责启动 profile、管理插件和导出配置，Web UI 则是其中一个前端，真正的核心是如何把模型、工具、会话、沙箱、记忆">
+<meta property="og:type" content="article">
+<meta property="og:title" content="把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读">
+<meta property="og:url" content="https://devloong.com/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="最近 DeepSeek 开源了 DeepSeek Harness。它的官方主路径是 npx @deepseek-ai&#x2F;dsh web：启动本地 Web UI，而不是提供一个类似传统 REPL 的终端对话界面。但顺着源码走一遍会发现，它更像一个 Agent 运行时：dsh 命令负责启动 profile、管理插件和导出配置，Web UI 则是其中一个前端，真正的核心是如何把模型、工具、会话、沙箱、记忆">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/deepseek-harness-hero.png">
+<meta property="article:published_time" content="2026-08-24T13:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-24T09:04:37.050Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="DeepSeek">
+<meta property="article:tag" content="TypeScript">
+<meta property="article:tag" content="源码解读">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/deepseek-harness-hero.png">
+
+
+<link rel="canonical" href="https://devloong.com/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/","path":"2026/08/24/把Agent拆成可替换的零件：DeepSeek-Harness源码解读/","title":"把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%BB%99%E7%BB%93%E8%AE%BA%EF%BC%9AHarness-%E6%89%8D%E6%98%AF-Agent-%E7%9A%84%E2%80%9C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E2%80%9D"><span class="nav-number">1.</span> <span class="nav-text">先给结论：Harness 才是 Agent 的“操作系统”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E5%90%AF%E5%8A%A8%E7%9C%8B%E8%AE%BE%E8%AE%A1%EF%BC%9A%E8%BF%90%E8%A1%8C%E6%80%81%E6%98%AF%E4%B8%80%E6%A3%B5%E9%85%8D%E7%BD%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E6%8F%92%E4%BB%B6%E6%A0%91"><span class="nav-number">2.</span> <span class="nav-text">从启动看设计：运行态是一棵配置出来的插件树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E7%A7%8D-Agent-%E6%A8%A1%E5%BC%8F%EF%BC%8C%E5%AE%9E%E8%B4%A8%E6%98%AF%E5%9B%9B%E4%BB%BD%E7%BB%84%E5%90%88%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">四种 Agent 模式，实质是四份组合配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Agent-Loop%EF%BC%9A%E4%B8%8D%E6%98%AF-while-true-%EF%BC%8C%E8%80%8C%E6%98%AF%E4%B8%80%E5%A5%97%E5%8F%AF%E6%8F%92%E6%8B%94%E7%9A%84%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="nav-number">4.</span> <span class="nav-text">Agent Loop：不是 while (true)，而是一套可插拔的状态机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%9A%E8%AF%9D%E4%B8%8D%E6%98%AF%E8%81%8A%E5%A4%A9%E8%AE%B0%E5%BD%95%EF%BC%8C%E8%80%8C%E6%98%AF%E4%BA%8B%E4%BB%B6%E6%BA%90"><span class="nav-number">5.</span> <span class="nav-text">会话不是聊天记录，而是事件源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E5%85%B7%E8%B0%83%E5%BA%A6%E6%AF%94%E6%83%B3%E8%B1%A1%E4%B8%AD%E5%A4%8D%E6%9D%82%EF%BC%9A%E5%B9%B6%E5%8F%91%E6%89%A7%E8%A1%8C%EF%BC%8C%E6%8C%89%E6%A8%A1%E5%9E%8B%E9%A1%BA%E5%BA%8F%E6%8F%90%E4%BA%A4"><span class="nav-number">6.</span> <span class="nav-text">工具调度比想象中复杂：并发执行，按模型顺序提交</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9C%9F%E6%AD%A3%E7%9A%84%E5%8F%AF%E6%9B%BF%E6%8D%A2%E5%8D%95%E5%85%83%EF%BC%9A%E8%83%BD%E5%8A%9B-seam"><span class="nav-number">7.</span> <span class="nav-text">真正的可替换单元：能力 seam</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="nav-number">8.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/08/24/%E6%8A%8AAgent%E6%8B%86%E6%88%90%E5%8F%AF%E6%9B%BF%E6%8D%A2%E7%9A%84%E9%9B%B6%E4%BB%B6%EF%BC%9ADeepSeek-Harness%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读 | Loong's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          把 Agent 拆成可替换的零件：DeepSeek Harness 源码解读
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-08-24 21:00:00 / 修改时间：17:04:37" itemprop="dateCreated datePublished" datetime="2026-08-24T21:00:00+08:00">2026-08-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>最近 DeepSeek 开源了 <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a>。它的官方主路径是 <code>npx @deepseek-ai/dsh web</code>：启动本地 Web UI，而不是提供一个类似传统 REPL 的终端对话界面。但顺着源码走一遍会发现，它更像一个 Agent 运行时：<code>dsh</code> 命令负责启动 profile、管理插件和导出配置，Web UI 则是其中一个前端，真正的核心是如何把模型、工具、会话、沙箱、记忆和调度组织起来。</p>
+<p>这篇文章基于仓库 <code>b150a551b8d4</code>（2026-08-21，<code>0.1.1-rc.2</code>）阅读。项目仍处于 Developer Preview，目录和接口迭代很快；因此本文讨论的是它的设计方法，而不是保证长期稳定的 API 教程。</p>
+<p><img src="/images/deepseek-harness-hero.png" alt="DeepSeek Harness 模块化 Agent 架构示意图"></p>
+<span id="more"></span>
+
+<h2 id="先给结论：Harness-才是-Agent-的“操作系统”"><a href="#先给结论：Harness-才是-Agent-的“操作系统”" class="headerlink" title="先给结论：Harness 才是 Agent 的“操作系统”"></a>先给结论：Harness 才是 Agent 的“操作系统”</h2><p>模型本身只会根据输入输出 token。一个能在真实工程里持续工作的 Agent，还需要知道：当前在哪个目录、有哪些工具、工具是否要审批、执行后的结果如何回到上下文、会话如何恢复、用户中途插话怎么办。</p>
+<p>DeepSeek Harness 给出的拆法是：<strong>模型负责推理，Harness 负责运行时，能力全部以插件提供。</strong></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">用户 / Web UI / Headless 调用</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">  Agent Loop ──── System Prompt + Tool Schema</span><br><span class="line">       │                     │</span><br><span class="line">       ▼                     ▼</span><br><span class="line">  Session Event Log ◀── LLM / Tools / Hooks</span><br><span class="line">       │</span><br><span class="line">       ├── 持久化、回放、fork、transcript、遥测</span><br><span class="line">       └── UI 根据同一条事件流渲染</span><br></pre></td></tr></table></figure>
+
+<p>这里最重要的不是“插件多”，而是没有一个特权业务内核。源码在 <code>packages/core/</code> 中把 session、tools、system-prompt、agent、agent-loop 拆成独立包；模型适配器、文件系统、沙箱、子 Agent、Web UI 也都只是向同一个运行时挂载能力。</p>
+<p>这里的 <strong>Cordis 不是 DeepSeek Harness 对自家底座起的名字</strong>，而是一个独立的开源框架（仓库为 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/cordis">cordiverse&#x2F;cordis</a>）。DeepSeek Harness 以 Cordis 作为底层框架：插件向共享 <code>Context</code> 注册 service、类型化事件和可逆副作用，卸载时这些注册也随之撤销。Harness 做的是在这个框架上，把 Agent 需要的领域能力组装出来。</p>
+<p>这比在一个 <code>Agent</code> 类里持续加 <code>if (enableX)</code> 更适合 Agent 产品。因为“换模型”“把本地文件系统换成远程沙箱”“为某类任务换一套工具”，最终都是替换一段组合，而不是侵入主循环。</p>
+<h2 id="从启动看设计：运行态是一棵配置出来的插件树"><a href="#从启动看设计：运行态是一棵配置出来的插件树" class="headerlink" title="从启动看设计：运行态是一棵配置出来的插件树"></a>从启动看设计：运行态是一棵配置出来的插件树</h2><p>入口 <code>apps/cli/src/bin.ts</code> 很薄。<code>@deepseek-ai/dsh</code> 的 <code>bin</code> 字段把 <code>dsh</code> 注册为命令行入口；它解析 <code>web</code>、<code>plugin</code>、<code>--profile</code>、<code>--dump-config</code> 等命令，再按模式加载对应模块。真正决定程序拥有什么能力的是 profile 与 bundle：基础 bundle 提供模型路由、持久化、沙箱、审批和设置；<code>web-app</code> 再挂上浏览器应用；<code>headless</code> 则是没有服务器的一次性运行器。</p>
+<p>它们会按顺序叠加 Cordis 配置，随后再应用 profile、home 目录和命令行 <code>--patch</code> 的 patch。也就是说，用户看到的 <code>dsh</code> 不是一个固定产品，而是“最终配置树”运行出来的一个实例。</p>
+<p>这个细节很工程化：patch 按配置项 id 替换整段配置，因此同一份发行版可以在不改源码的情况下，换 LLM、关 Web 搜索、增加工具，甚至替换某个 service 的实现。想看自己机器实际启动的树，项目提供了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dsh --profile web --dump-config</span><br></pre></td></tr></table></figure>
+
+<p>这也解释了它为什么把“Everything is a Plugin”写得很重：不是营销标语，而是启动模型。需要强调的是，CLI 在这里是<strong>启动与运维界面</strong>，不是它目前面向用户的主要聊天界面；官方 README 展示的默认体验仍是 Web UI。源码的 help 示例还给出了 <code>dsh --profile headless &quot;run the tests&quot;</code>，用于一次性执行任务后打印结果并退出。</p>
+<h2 id="四种-Agent-模式，实质是四份组合配置"><a href="#四种-Agent-模式，实质是四份组合配置" class="headerlink" title="四种 Agent 模式，实质是四份组合配置"></a>四种 Agent 模式，实质是四份组合配置</h2><p><code>apps/cli/config/agent-presets/</code> 里有四个预置：<code>standard</code>、<code>code</code>、<code>minimal</code>、<code>cordis</code>。它们不是同一条循环上的几个布尔开关，而是不同的 Agent-plane composition。</p>
+<table>
+<thead>
+<tr>
+<th>预置</th>
+<th>源码上的关键差异</th>
+<th>适合什么场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>standard</code></td>
+<td>文件、Shell、搜索、技能、计划、目标、子 Agent、workflow 等完整工具集</td>
+<td>默认编码 Agent</td>
+</tr>
+<tr>
+<td><code>code</code>（PTC）</td>
+<td>继承标准能力，但增加工具呈现层，让模型用 TypeScript 程序组合多步调用</td>
+<td>降低多轮工具调用开销</td>
+</tr>
+<tr>
+<td><code>minimal</code></td>
+<td>固定 prompt，只保留持久 shell 与 <code>str_replace_editor</code>，没有 compaction</td>
+<td>做极简环境的模型评测</td>
+</tr>
+<tr>
+<td><code>cordis</code></td>
+<td>面向创建 preset 与试验 Cordis 插件，附带对应技能</td>
+<td>自定义 Harness</td>
+</tr>
+</tbody></table>
+<p><code>minimal/agent.cordis.yml</code> 很能说明问题：它明确把 persona 设成 <code>complete: true</code>，关闭运行时上下文注入，并且只装持久终端和编辑器。这个模式不是“功能缩水版标准模式”，而是刻意收紧变量，方便评估模型在有限工具与提示词下的真实能力。</p>
+<p>另一个值得注意的细节是隔离。预置里的 service 往往放进 <code>cordis:group</code>，并用 <code>isolate</code> 创建私有 realm。源码在 <code>packages/preset/agent-presets/src/mount.ts</code> 会审计泄漏到 root realm 的 service：如果一个本该按会话隔离的服务错误地注册为进程全局，第二个会话挂载同一预置就可能碰撞。这个 guard 很朴素，却正好击中插件系统最容易出现的生命周期 bug。</p>
+<h2 id="Agent-Loop：不是-while-true-，而是一套可插拔的状态机"><a href="#Agent-Loop：不是-while-true-，而是一套可插拔的状态机" class="headerlink" title="Agent Loop：不是 while (true)，而是一套可插拔的状态机"></a>Agent Loop：不是 <code>while (true)</code>，而是一套可插拔的状态机</h2><p>默认驱动器在 <code>packages/core/agent-loop/src/agent.ts</code>，类名叫 <code>ReactLoopAgent</code>。这里的 React 不是前端框架，而是“对输入和事件作出反应”的意思。</p>
+<p>每个 Agent 有一个 inbox，并将输入分成两类：</p>
+<ul>
+<li><code>followup()</code> 进入下一轮；</li>
+<li><code>steer()</code> 进入当前工具步骤结束后的下一步；</li>
+<li><code>inject()</code> 也进入下一步，但不会主动唤醒循环。</li>
+</ul>
+<p>因此用户在模型执行过程中补充一句“先别改，告诉我方案”，不是粗暴取消并重新发起请求，而是能在下一个步骤边界被接走。这个 inbox 语义是长任务交互体验的基础。</p>
+<p>一轮执行的大致顺序如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">turn/start</span><br><span class="line">  领取 inbox 输入</span><br><span class="line">  agent/pre-step（可改写或拒绝输入）</span><br><span class="line">  step/start</span><br><span class="line">  组装 prompt 与工具 schema</span><br><span class="line">  LLM 流式输出 assistant/chunk</span><br><span class="line">  固化 assistant/message</span><br><span class="line">  执行 tool/call 与 tool/result</span><br><span class="line">  step/end</span><br><span class="line">  还有工具结果上下文或 steering？继续下一 step</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
+
+<p>有两个实现选择特别值得借鉴。</p>
+<p>第一，<code>agent/pre-step</code>、<code>agent/request</code>、<code>llm/stream</code> 以及工具前中后钩子都是 waterfall 事件：监听者必须调用 <code>next()</code> 才会放行后续处理。这给 compaction、提示词注入、重试、审批等横切能力提供了明确挂点，而不需要修改 loop。</p>
+<p>第二，loop 对取消和错误的收口很严格。每个 turn 都会先追加 <code>turn/start</code>，无论正常、被拦截、取消还是报错，最终都会尝试追加带原因的 <code>turn/end</code>。这让“用户看到的执行状态”和“磁盘上的可恢复事实”保持一致。</p>
+<h2 id="会话不是聊天记录，而是事件源"><a href="#会话不是聊天记录，而是事件源" class="headerlink" title="会话不是聊天记录，而是事件源"></a>会话不是聊天记录，而是事件源</h2><p><code>packages/core/session/src/index.ts</code> 的注释直接定义了它：append-only session log、内存 store，以及从日志派生出的 LLM history。</p>
+<p>换句话说，模型并不直接拿一份可变的 messages 数组继续聊；请求历史是从 <code>SessionEvent</code> 投影出来的。<code>user/message</code>、<code>assistant/message</code>、<code>tool/result</code> 会进入模型可见历史，而流式 chunk、轮次开始结束、工具调用等事件则保留完整运行轨迹。</p>
+<p>这样做会带来几个连锁收益：</p>
+<ol>
+<li>UI 与模型不再各存一份“真相”。UI 订阅 <code>session/event</code> 渲染 chunk，模型从同一日志派生历史。</li>
+<li>fork、resume、transcript、遥测和持久化都可以消费同一个事件流，不必为每个功能造一套状态同步。</li>
+<li>发生故障时能区分“模型输出过什么”“哪个工具已开始”“哪个结果已写入”，而不是只剩最终文本。</li>
+</ol>
+<p>它也付出了代价：所有模型可见输入都必须被记录。项目文档甚至把这条写成运行时不变量——如果给模型额外注入了内容，就应该扩展 session event，并让它能从日志重新渲染。这个约束有些“较真”，但能防止恢复会话后上下文悄悄漂移。</p>
+<h2 id="工具调度比想象中复杂：并发执行，按模型顺序提交"><a href="#工具调度比想象中复杂：并发执行，按模型顺序提交" class="headerlink" title="工具调度比想象中复杂：并发执行，按模型顺序提交"></a>工具调度比想象中复杂：并发执行，按模型顺序提交</h2><p>工具调用调度在 <code>packages/core/agent-loop/src/tool-calls.ts</code>。它没有简单地 <code>Promise.all()</code>，而是把调用分成 exclusive barrier 和 bounded rolling pool。</p>
+<p>核心策略可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">模型按 A、B、C 的顺序发起调用</span><br><span class="line">        │</span><br><span class="line">        ├── 可并行的调用同时 dispatch，最多 maxParallelToolCalls 个</span><br><span class="line">        ├── 独占调用成为屏障，等待前面的池排空</span><br><span class="line">        └── 结果始终按 A、B、C 的模型顺序写回 session</span><br></pre></td></tr></table></figure>
+
+<p>为什么不让“谁先完成谁先回模型”？因为工具结果本身会成为下一步上下文。若文件搜索、编辑、测试的结果因网络或 CPU 抖动随机重排，同一个请求就可能得到不同轨迹，回放也不可靠。</p>
+<p>更细的一层在工具流水线：<code>tools/pre-execute</code> 可以做权限、hook 和 sandbox 判断；随后才到工具 body；<code>tools/post-execute</code> 可以重写结果或注入额外上下文；最后才落为不可变的 <code>tool/result</code> 事件。被拒绝的调用也会有结构化结果，而不是静默消失。对 Agent 而言，这等于把“安全策略”和“工具实现”分开了。</p>
+<h2 id="真正的可替换单元：能力-seam"><a href="#真正的可替换单元：能力-seam" class="headerlink" title="真正的可替换单元：能力 seam"></a>真正的可替换单元：能力 seam</h2><p>DeepSeek Harness 文档里有个很有用的词：capability seam。它不是泛泛的“接口”，而是三件套：service definition、service provider、consumer。</p>
+<p>以 shell 为例：模型面对的是 shell tool；tool 依赖一个 shell service；shell service 再可能委托本地 subprocess 或远程 sandbox。把 provider 从本地替换为远程，并不需要 fork 出一套 Bash、PTY、LSP 的工具实现——消费方继续依赖同一个 seam 即可。</p>
+<p>这也是这个项目最值得学习的地方：</p>
+<ul>
+<li>不把“工具”与某个本地实现绑死；</li>
+<li>不把“运行循环”与某个模型供应商绑死；</li>
+<li>不把“持久化”与 UI 绑死；</li>
+<li>不把扩展点藏在难以追踪的 monkey patch 里，而是放在有名称的 service 和事件上。</li>
+</ul>
+<p>代价也很真实：仓库非常碎，配置与运行时作用域的概念门槛不低。第一次读源码时，不要从 Web 页面一路点进去；更有效的路线是先读 <code>docs/architecture.zh.md</code>，再看 <code>agent-loop</code>、<code>session</code> 与一个 preset 配置文件。先建立事件与作用域的心智模型，后面看几十个 package 才不会迷路。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>DeepSeek Harness 最有意思的地方，不是它又提供了多少工具，而是把一个 Agent 拆成了可以观察、替换、组合和回放的运行时部件。</p>
+<p>如果你正在做内部编码助手、自动化工作流，或者只是想理解 Claude Code &#x2F; Codex 这类工具为什么不只是“模型 + prompt”，这个项目都很值得读。尤其是它对 session event、工具顺序、作用域隔离和组合配置的处理，几乎就是 Agent 工程从 demo 走向可维护产品时必须补的四门课。</p>
+<p>源码与文档入口：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness 仓库</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.zh.md">架构文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/agent-lifecycle.zh.md">Agent 生命周期时序图</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/tool-execution-pipeline.zh.md">工具执行流水线</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AI-Agent/" rel="tag"># AI Agent</a>
+              <a href="/tags/DeepSeek/" rel="tag"># DeepSeek</a>
+              <a href="/tags/%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/" rel="tag"># 源码解读</a>
+              <a href="/tags/TypeScript/" rel="tag"># TypeScript</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/20/opencode+GLM-5.3%E4%B8%8A%E6%89%8B%E4%BD%93%E9%AA%8C%EF%BC%9A%E4%B8%80%E6%AC%A1%E7%9C%9F%E5%AE%9E%E7%9A%84%E5%8D%9A%E5%AE%A2%E5%8D%87%E7%BA%A7%E5%AE%9E%E6%88%98/" rel="prev" title="opencode + GLM-5.3 上手体验：一次真实的博客升级实战">
+                  <i class="fa fa-angle-left"></i> opencode + GLM-5.3 上手体验：一次真实的博客升级实战
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"10cdbe6e0a9351ba15a4ba4dd89c4de2"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
