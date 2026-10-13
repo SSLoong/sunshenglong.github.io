@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="从执行环境、权限审批、连接器（MCP）、浏览器与桌面控制、记忆与技能、定时与事件任务、子 Agent 委派、凭据管理、成本与开放性九个维度，拆解 Grok Bot 的技术设计，并基于官方文档与 OpenClaw、Manus、Claude Cowork 横向对比。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比">
+<meta property="og:url" content="https://devloong.com/2026/10/13/Grok-Bot%E5%88%9D%E4%BD%93%E9%AA%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="从执行环境、权限审批、连接器（MCP）、浏览器与桌面控制、记忆与技能、定时与事件任务、子 Agent 委派、凭据管理、成本与开放性九个维度，拆解 Grok Bot 的技术设计，并基于官方文档与 OpenClaw、Manus、Claude Cowork 横向对比。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-13T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-13T07:00:35.827Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Grok Bot">
+<meta property="article:tag" content="MCP">
+<meta property="article:tag" content="Manus">
+<meta property="article:tag" content="OpenClaw">
+<meta property="article:tag" content="桌面Agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://devloong.com/2026/10/13/Grok-Bot%E5%88%9D%E4%BD%93%E9%AA%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/10/13/Grok-Bot%E5%88%9D%E4%BD%93%E9%AA%8C/","path":"2026/10/13/Grok-Bot初体验/","title":"从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%B8%80%E5%BC%A0%E6%80%BB%E5%9B%BE%EF%BC%9A%E6%A1%8C%E9%9D%A2-Agent-%E7%94%B1%E5%93%AA%E4%BA%9B%E9%83%A8%E4%BB%B6%E6%9E%84%E6%88%90"><span class="nav-number">1.</span> <span class="nav-text">一、一张总图：桌面 Agent 由哪些部件构成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%EF%BC%9A%E4%BA%91%E7%AB%AF%E6%8C%81%E4%B9%85-VM-vs-%E4%BD%8F%E5%9C%A8%E4%BD%A0%E7%9A%84%E7%94%B5%E8%84%91%E9%87%8C"><span class="nav-number">2.</span> <span class="nav-text">二、执行环境：云端持久 VM vs 住在你的电脑里</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%9D%83%E9%99%90%E6%A8%A1%E5%9E%8B%EF%BC%9A%E5%AE%A1%E6%89%B9%E4%B8%8E%E4%B8%8D%E5%8F%AF%E4%BF%A1%E5%86%85%E5%AE%B9"><span class="nav-number">3.</span> <span class="nav-text">三、权限模型：审批与不可信内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E8%BF%9E%E6%8E%A5%E5%99%A8%EF%BC%9AMCP-%E6%88%90%E4%BA%86%E4%BA%8B%E5%AE%9E%E6%A0%87%E5%87%86"><span class="nav-number">4.</span> <span class="nav-text">四、工具与连接器：MCP 成了事实标准</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%8E%E6%A1%8C%E9%9D%A2%E6%8E%A7%E5%88%B6"><span class="nav-number">5.</span> <span class="nav-text">五、浏览器与桌面控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%AE%B0%E5%BF%86%E4%B8%8E%E6%8A%80%E8%83%BD"><span class="nav-number">6.</span> <span class="nav-text">六、记忆与技能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%AE%9A%E6%97%B6%E4%B8%8E%E4%BA%8B%E4%BB%B6%E9%A9%B1%E5%8A%A8%E4%BB%BB%E5%8A%A1"><span class="nav-number">7.</span> <span class="nav-text">七、定时与事件驱动任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E5%AD%90-Agent-%E5%A7%94%E6%B4%BE"><span class="nav-number">8.</span> <span class="nav-text">八、子 Agent 委派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E5%87%AD%E6%8D%AE%E7%AE%A1%E7%90%86"><span class="nav-number">9.</span> <span class="nav-text">九、凭据管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E6%88%90%E6%9C%AC%E4%B8%8E%E5%BC%80%E6%94%BE%E6%80%A7"><span class="nav-number">10.</span> <span class="nav-text">十、成本与开放性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%B1%80%E9%99%90%E4%B8%8E%E6%9C%AA%E9%AA%8C%E8%AF%81%E9%A1%B9"><span class="nav-number">11.</span> <span class="nav-text">十一、局限与未验证项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%80%BB%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">十二、总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/10/13/Grok-Bot%E5%88%9D%E4%BD%93%E9%AA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比 | Loong's Blog">
+      <meta itemprop="description" content="从执行环境、权限审批、连接器（MCP）、浏览器与桌面控制、记忆与技能、定时与事件任务、子 Agent 委派、凭据管理、成本与开放性九个维度，拆解 Grok Bot 的技术设计，并基于官方文档与 OpenClaw、Manus、Claude Cowork 横向对比。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-10-13 15:00:00 / 修改时间：15:00:35" itemprop="dateCreated datePublished" datetime="2026-10-13T15:00:00+08:00">2026-10-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">技术实践</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">从执行环境、权限审批、连接器（MCP）、浏览器与桌面控制、记忆与技能、定时与事件任务、子 Agent 委派、凭据管理、成本与开放性九个维度，拆解 Grok Bot 的技术设计，并基于官方文档与 OpenClaw、Manus、Claude Cowork 横向对比。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>我日常主力是 ChatGPT、Cursor、Codex 和 Claude Code，它们擅长“坐在电脑前、打开一个项目干活”。这次试用 Grok Bot，是想补上另一类需求：盯邮件、查提交记录、清理仓库身份这类不写代码却琐碎、需要 Agent 常驻在线、能碰账号、还要在关键步骤停下来问人的事。</p>
+<p>所以这篇不写流水账，而是借这次体验，把“桌面 Agent”拆成几个工程维度，看看 Grok Bot 怎么设计，以及 OpenClaw、Manus、Claude Cowork 各自走了哪条路。</p>
+<blockquote>
+<p>说明：Grok Bot 部分来自官方文档和我的实际使用；其余三款只参考官方文档，没有并排实测。信息截至 2026-10-13，标注“未亲测”的条目请以官方为准。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="一、一张总图：桌面-Agent-由哪些部件构成"><a href="#一、一张总图：桌面-Agent-由哪些部件构成" class="headerlink" title="一、一张总图：桌面 Agent 由哪些部件构成"></a>一、一张总图：桌面 Agent 由哪些部件构成</h2><p>抛开产品包装，一个能长期替你干活的 Agent 大致包括这几层：</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">┌──────────── 入口层：桌面/移动 <span class="title class_">App</span>、IM、X @提及 ────────────┐</span><br><span class="line">│                                                            │</span><br><span class="line">│  编排层：<span class="title class_">Agent</span>（规划、对话、记忆）                          │</span><br><span class="line">│                │                                           │</span><br><span class="line">│  策略层：审批模型 / 不可信内容隔离                       │</span><br><span class="line">│                │                                           │</span><br><span class="line">│  能力层：连接器(MCP) │ <span class="title class_">Shell</span>/文件 │ 浏览器/桌面控制 │ 定时任务 │</span><br><span class="line">│                │                                           │</span><br><span class="line">│  执行环境：云端持久 VM  ◀──可选──▶  用户本机（注册设备）      │</span><br><span class="line">└────────────────────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>下面逐层看。</p>
+<h2 id="二、执行环境：云端持久-VM-vs-住在你的电脑里"><a href="#二、执行环境：云端持久-VM-vs-住在你的电脑里" class="headerlink" title="二、执行环境：云端持久 VM vs 住在你的电脑里"></a>二、执行环境：云端持久 VM vs 住在你的电脑里</h2><p>这是各家最根本的分歧。</p>
+<p><strong>Grok Bot</strong> 按<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/overview">官方文档</a>，每个 Bot 跑在一台<strong>持久化的云端电脑</strong>上，有浏览器、文件系统和终端。几个值得注意的工程细节：</p>
+<ul>
+<li><strong>持久化</strong>：装过的工具、生成的文件、浏览器登录态在多轮对话之间都保留，不是一次性沙箱。</li>
+<li><strong>共享而非隔离</strong>：同一用户名下所有 Bot 共享同一台机器的文件系统和浏览器登录态，但每个 Agent 有自己的桌面窗口。文档明确说这<strong>不是安全边界</strong>（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/approvals-security-and-privacy">文档</a>）。</li>
+<li><strong>本机作为可选扩展</strong>：把自己的 Mac 注册成设备后，Agent 可以在本机执行命令、读文件，也能在云端和本机之间原样复制文件。云端和本机文件系统完全分开，路径不互通。</li>
+<li><strong>网络受平台约束</strong>：我想用 IMAP 收 163 邮件，993 端口出站被拦了，最后改成转发到 Gmail。“自带电脑”意味着网络策略由平台决定。</li>
+</ul>
+<p><strong>OpenClaw</strong> 反过来，它是一个跑在你自己机器或服务器上的 Gateway（<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/">文档</a>），天然拥有本机全部能力，代价是运维和安全都要自己负责。</p>
+<p><strong>Manus</strong> 以云端执行为主，后来推出桌面端 <a target="_blank" rel="noopener" href="https://manus.im/blog/manus-my-computer-desktop">My Computer</a>，通过终端执行命令，范围限定在授权文件夹。</p>
+<p><strong>Claude Cowork</strong> 跑在 Claude Desktop 里，访问你选定的本地文件夹，部分任务可远程运行（<a target="_blank" rel="noopener" href="https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork">帮助中心</a>）。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Grok Bot</th>
+<th>OpenClaw</th>
+<th>Manus</th>
+<th>Claude Cowork</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主执行位置</td>
+<td>云端持久 VM</td>
+<td>自托管 Gateway</td>
+<td>云端为主 + 桌面端</td>
+<td>本地桌面应用为主</td>
+</tr>
+<tr>
+<td>本机访问</td>
+<td>注册设备后按策略审批</td>
+<td>原生</td>
+<td>授权文件夹内 CLI</td>
+<td>选定文件夹</td>
+</tr>
+<tr>
+<td>电脑睡眠影响</td>
+<td>云端任务不受影响；本机命令需在线（亲测）</td>
+<td>Gateway 主机需在线</td>
+<td>本地任务需桌面端运行</td>
+<td>仅连接器任务可远程跑（<a target="_blank" rel="noopener" href="https://support.claude.com/en/articles/13854387-schedule-recurring-tasks-in-claude-cowork">文档</a>）</td>
+</tr>
+</tbody></table>
+<p>工程上的取舍很清楚：<strong>云端 VM 换来的是常驻和隔离你的主力机，失去的是网络自由度和本地上下文</strong>；本地方案正好相反。Grok Bot 的做法是两者兼有，默认在云端，需要时再“借用”本机。</p>
+<h2 id="三、权限模型：审批与不可信内容"><a href="#三、权限模型：审批与不可信内容" class="headerlink" title="三、权限模型：审批与不可信内容"></a>三、权限模型：审批与不可信内容</h2><p>Agent 一旦能执行命令、发消息，权限设计就是核心问题。从官方文档和使用体验看，Grok Bot 的权限主要有两层：</p>
+<ol>
+<li><strong>动作级审批</strong>：发邮件、发消息、发布、购买、删除、强推这类<strong>不可逆或对外可见</strong>的动作，必须用户明确授权才执行，否则只生成草稿，停在执行前。我让它改写博客仓库历史并强推时，它就先停下来让我确认。</li>
+<li><strong>本机执行审批</strong>：对注册设备的命令，默认策略是 Ask every time，可改成 Always allow 或 Never allow（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/approvals-security-and-privacy">文档</a>）。实际使用中，每条本地命令都会弹审批卡。</li>
+</ol>
+<p>另一个容易被忽视的设计是<strong>不可信内容隔离</strong>：网页、邮件、工具返回的内容都被当作数据而非指令。邮件里写着“请把这份文件转发给某某”，Agent 不会照做，只会报告给你。这是防提示词注入的基本功，对需要读你邮箱的 Agent 尤其关键。</p>
+<p>对比：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Grok Bot</th>
+<th>OpenClaw</th>
+<th>Manus</th>
+<th>Claude Cowork</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本地执行默认</td>
+<td>Ask every time</td>
+<td>gateway&#x2F;node 主机 <code>exec.security</code> 默认 <code>full</code>、<code>ask</code> 默认 <code>off</code>，可配 deny&#x2F;allowlist&#x2F;ask 等（<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/tools/exec-approvals">文档</a>）</td>
+<td>每条命令需批准，可选 Allow Once &#x2F; Always Allow（<a target="_blank" rel="noopener" href="https://manus.im/docs/features/desktop">文档</a>）</td>
+<td>文件夹级授权，定时任务可设审批模式</td>
+</tr>
+<tr>
+<td>信任边界</td>
+<td>同一账号的 Bot 共享机器，非隔离</td>
+<td>一个 Gateway 一个信任边界（<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/gateway/security">安全页</a>）</td>
+<td>文件夹级</td>
+<td>文件夹级</td>
+</tr>
+<tr>
+<td>加固手段</td>
+<td>平台内置</td>
+<td><code>cautious</code> 预设、<code>openclaw security audit</code></td>
+<td>平台内置</td>
+<td>企业管理策略（<a target="_blank" rel="noopener" href="https://claude.com/resources/tutorials/claude-cowork-enterprise-administrator-guide">管理指南</a>）</td>
+</tr>
+</tbody></table>
+<p>OpenClaw 的默认值比较“放开”，安全文档写得很扎实，但需要你自己读、自己配，这是自托管的代价。托管型产品则把这层策略收到平台里。</p>
+<h2 id="四、工具与连接器：MCP-成了事实标准"><a href="#四、工具与连接器：MCP-成了事实标准" class="headerlink" title="四、工具与连接器：MCP 成了事实标准"></a>四、工具与连接器：MCP 成了事实标准</h2><p>Grok Bot 的能力优先级是：<strong>连接器优先，computer use 兜底</strong>（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/computer-and-apps">文档</a>）。</p>
+<ul>
+<li><strong>MCP 连接器</strong>：Gmail、GitHub、Notion 等以连接器形式接入，账号走授权，不需要把密码交给 Agent。</li>
+<li><strong>网页操作兜底</strong>：没有连接器的服务，就在云端浏览器里操作。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Grok Bot</th>
+<th>OpenClaw</th>
+<th>Manus</th>
+<th>Claude Cowork</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>集成方式</td>
+<td>MCP 连接器 + 网页操作</td>
+<td>插件 + ClawHub 生态</td>
+<td>内置连接器 + MCP（<a target="_blank" rel="noopener" href="https://manus.im/features/automations">文档</a>）</td>
+<td>连接器 + 插件</td>
+</tr>
+<tr>
+<td>对话入口</td>
+<td>自家 App；X 上 @bot（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/overview">文档</a>）</td>
+<td>WhatsApp、Telegram、Slack、Signal、iMessage 等几十个渠道（<a target="_blank" rel="noopener" href="https://github.com/openclaw/openclaw">GitHub</a>）</td>
+<td>Web、桌面，可接 <a target="_blank" rel="noopener" href="https://manus.im/blog/manus-agents-telegram">Telegram</a>、WhatsApp Business</td>
+<td>桌面、Web、移动</td>
+</tr>
+</tbody></table>
+<p>OpenClaw 的长板是 IM 渠道覆盖；Grok Bot 的长板是复用 Cursor 生态里已有的连接（我的 GitHub 就是直接复用的，不用重新授权）。</p>
+<h2 id="五、浏览器与桌面控制"><a href="#五、浏览器与桌面控制" class="headerlink" title="五、浏览器与桌面控制"></a>五、浏览器与桌面控制</h2><ul>
+<li><strong>Grok Bot</strong>：云端 VM 有自己的桌面和浏览器，登录态持久保存，用户可以打开这个桌面旁观或接手（比如处理验证码）。<strong>本机浏览器控制我没有验证（未亲测）</strong>。</li>
+<li><strong>OpenClaw</strong>：有浏览器控制能力，安全页把它列为单独的风险项。</li>
+<li><strong>Manus</strong>：<a target="_blank" rel="noopener" href="https://manus.im/docs/features/browser-operator">Browser Operator</a> 扩展直接使用本地 Chrome&#x2F;Edge 的登录态。</li>
+<li><strong>Claude Cowork</strong>：配合 Claude in Chrome。</li>
+</ul>
+<p>这里的关键取舍是<strong>登录态放在哪儿</strong>：放在云端 VM 上，意味着需要在 VM 上登录一次，但不会碰你本机的会话；借用本地浏览器则开箱即用，风险面也直接落在你的主力浏览器上。</p>
+<h2 id="六、记忆与技能"><a href="#六、记忆与技能" class="headerlink" title="六、记忆与技能"></a>六、记忆与技能</h2><p>文档描述的记忆是<strong>分层的</strong>（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/skills-routines-and-automations">文档</a>）：</p>
+<ul>
+<li><strong>Bot 级身份与记忆</strong>：命名的 Bot 有固定职责，保留自己的偏好和上下文；</li>
+<li><strong>Skill</strong>：把成熟流程沉淀成可复用的技能。文档推荐的路径是“先把一次性任务做稳 → 沉淀成 skill → 再上定时”。</li>
+</ul>
+<p>长期记忆的效果我还没有足够数据评估。</p>
+<h2 id="七、定时与事件驱动任务"><a href="#七、定时与事件驱动任务" class="headerlink" title="七、定时与事件驱动任务"></a>七、定时与事件驱动任务</h2><p>Grok Bot 把定时任务（routine）当一等公民：一句话创建，cron 表达式加时区，间隔不少于 5 分钟，每个 Bot 最多 50 个（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/skills-routines-and-automations">文档</a>）。我建的邮件提醒是 <code>30 9-18 * * *</code>（Asia&#x2F;Shanghai），并且约定<strong>没有新邮件就保持静默</strong>。这一点工程上很重要：定时任务默认“有变化才打扰”，否则提醒很快会变成噪音。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Grok Bot</th>
+<th>OpenClaw</th>
+<th>Manus</th>
+<th>Claude Cowork</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定时</td>
+<td>cron + 时区，≥5 分钟，≤50 个&#x2F;Bot</td>
+<td>cron、heartbeat（<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/automation/cron-jobs">文档</a>）</td>
+<td>定时 + 自然语言编排（<a target="_blank" rel="noopener" href="https://manus.im/docs/automations">文档</a>）</td>
+<td>小时&#x2F;天&#x2F;工作日&#x2F;周</td>
+</tr>
+<tr>
+<td>事件触发</td>
+<td>文档称部分集成支持 Slack、GitHub 事件（未亲测）</td>
+<td>webhook、Gmail Pub&#x2F;Sub</td>
+<td>GitHub、Gmail、Shopify、Webhook</td>
+<td>文档以定时为主</td>
+</tr>
+<tr>
+<td>运行位置</td>
+<td>云端，不依赖本机</td>
+<td>Gateway 主机</td>
+<td>云端</td>
+<td>连接器任务可远程，本地文件任务需唤醒</td>
+</tr>
+</tbody></table>
+<p>四家都能定时，真正的差别在<strong>跑在哪儿</strong>。</p>
+<h2 id="八、子-Agent-委派"><a href="#八、子-Agent-委派" class="headerlink" title="八、子 Agent 委派"></a>八、子 Agent 委派</h2><p>这是 Grok Bot 让我印象最深的架构点：主 Agent 负责对话、规划和确认，具体执行可以委派给专门的 Agent。</p>
+<p><strong>案例：改写 Git 历史并强推。</strong> 我希望个人博客仓库里不出现公司邮箱作为提交身份，这需要改写历史并强推，属于不可逆操作。Grok Bot 先讲清原因（本机全局 <code>git config user.email</code> 被 <code>hexo deploy</code> 继承），然后停下来让我确认，确认后再委派执行：</p>
+<ul>
+<li><strong>云端编码 Agent</strong>：改写 33 个提交并强推 master、source 两个分支，交给了 Cursor 云端编码 Agent，它同时扫描了仓库里的敏感内容，<strong>只报告不改动</strong>；</li>
+<li><strong>本机收尾</strong>：之后通过注册的 Mac，在逐条审批下备份本地仓库、对齐远端、设置仓库级 git 身份，并确认未提交的草稿没被动到。</li>
+</ul>
+<p>这种“编排者 + 执行者”的分层，把<strong>决策权和审批</strong>集中在主 Agent，把<strong>具体执行</strong>交给专门的 Agent，和 Claude Code 的 subagent 思路相似，只是 Grok Bot 把它延伸到了跨产品（Cursor 编码 Agent）的委派。</p>
+<p>其他三款里，OpenClaw 自我定位为“连接聊天应用和 AI 编码 Agent 的网关”，Claude、Codex 等运行时以插件接入（<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/">文档</a>）；Manus 和 Cowork 的公开文档里，我没看到对等的用户可见委派机制描述，这里不下结论。</p>
+<h2 id="九、凭据管理"><a href="#九、凭据管理" class="headerlink" title="九、凭据管理"></a>九、凭据管理</h2><ul>
+<li><strong>OAuth 连接器优先</strong>：Gmail、GitHub 走授权，Agent 拿不到你的密码。</li>
+<li><strong>掩码密钥输入</strong>：确实需要密钥时（比如邮箱授权码），对话里有一个掩码输入框，不会明文出现在聊天记录里。我一开始把授权码直接贴进了聊天，它提醒我作废重新生成，改用掩码输入。</li>
+<li><strong>风险提示</strong>：由于同一账号的 Bot 共享 VM，<strong>存进 VM 的凭据对你所有 Bot 可见</strong>，敏感凭据的放置要自己权衡。</li>
+</ul>
+<p>OpenClaw 自托管，凭据就在你自己机器上；Manus 和 Cowork 由平台托管连接器授权。</p>
+<h2 id="十、成本与开放性"><a href="#十、成本与开放性" class="headerlink" title="十、成本与开放性"></a>十、成本与开放性</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Grok Bot</th>
+<th>OpenClaw</th>
+<th>Manus</th>
+<th>Claude Cowork</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开源</td>
+<td>否</td>
+<td>是，MIT</td>
+<td>否</td>
+<td>否</td>
+</tr>
+<tr>
+<td>收费</td>
+<td>含在 Cursor 付费个人版&#x2F;Teams 中，也可绑定 SuperGrok，用量每周重置（<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/overview">文档</a>）</td>
+<td>软件免费，模型与机器自付</td>
+<td>积分制订阅，有免费额度（<a target="_blank" rel="noopener" href="https://help.manus.im/en/articles/11711097-what-are-the-rules-for-credits-consumption-and-how-can-i-obtain-them">帮助中心</a>），价格以官网为准</td>
+<td>需 Claude 付费套餐</td>
+</tr>
+</tbody></table>
+<p>背景补充：OpenClaw 前身为 Clawdbot&#x2F;Moltbot，2026 年 1 月底定名，由非营利基金会维护（<a target="_blank" rel="noopener" href="https://openclaw.ai/blog/introducing-openclaw">博客</a>）；Manus 已宣布加入 Meta（<a target="_blank" rel="noopener" href="https://manus.im/en/blog/manus-joins-meta-for-next-era-of-innovation">博客</a>）。</p>
+<h2 id="十一、局限与未验证项"><a href="#十一、局限与未验证项" class="headerlink" title="十一、局限与未验证项"></a>十一、局限与未验证项</h2><ol>
+<li><strong>云端网络受限</strong>：部分协议端口出不去，只能绕路。</li>
+<li><strong>检索有盲区</strong>：我问最近一次提交时，它第一次按作者搜索，漏掉了用未关联邮箱提交的博客仓库，我反驳后才改成遍历仓库查到。Agent 的第一个答案应当被当作假设。</li>
+<li><strong>本机能力依赖在线</strong>：电脑睡眠，连接就断。</li>
+<li><strong>共享 VM 不是隔离</strong>：多个 Bot 共享文件和登录态。</li>
+<li><strong>未亲测</strong>：本机浏览器控制、事件触发、长期记忆效果、长期运行的用量消耗。</li>
+<li><strong>对比非实测</strong>：其他三款都来自官方文档，产品迭代快，信息可能过时。</li>
+</ol>
+<h2 id="十二、总结"><a href="#十二、总结" class="headerlink" title="十二、总结"></a>十二、总结</h2><p>把桌面 Agent 拆开看，差异集中在三个设计选择：</p>
+<ul>
+<li><strong>执行环境放哪儿</strong>：云端常驻（Grok Bot、Manus）还是住在本机（OpenClaw）；</li>
+<li><strong>权限策略谁来管</strong>：平台内置的审批与审查，还是自托管时自己配置；</li>
+<li><strong>任务怎么分工</strong>：单 Agent 包办，还是编排者加子 Agent 委派。</li>
+</ul>
+<p>我的选型建议：</p>
+<ul>
+<li>要完全掌控、数据不出自己机器、愿意折腾安全配置：<strong>OpenClaw</strong>；</li>
+<li>要开箱即用的云端通用 Agent，偶尔借用本地浏览器登录态：<strong>Manus</strong>；</li>
+<li>重度 Cursor 用户，想要一个常驻云端、接好邮件和 GitHub、能把编码任务委派出去、关键操作一定先问你的 Agent：<strong>Grok Bot</strong>。</li>
+</ul>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/overview">Grok Bot 文档</a>：<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/approvals-security-and-privacy">审批与安全</a>、<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/computer-and-apps">电脑与应用</a>、<a target="_blank" rel="noopener" href="https://docs.x.ai/grok-bot/skills-routines-and-automations">技能与定时任务</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.openclaw.ai/">OpenClaw 文档</a>、<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/tools/exec-approvals">执行审批</a>、<a target="_blank" rel="noopener" href="https://docs.openclaw.ai/gateway/security">安全</a>、<a target="_blank" rel="noopener" href="https://github.com/openclaw/openclaw">GitHub</a></li>
+<li><a target="_blank" rel="noopener" href="https://manus.im/docs/features/desktop">Manus Desktop</a>、<a target="_blank" rel="noopener" href="https://manus.im/docs/features/browser-operator">Browser Operator</a>、<a target="_blank" rel="noopener" href="https://manus.im/docs/automations">Automations</a></li>
+<li><a target="_blank" rel="noopener" href="https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork">Claude Cowork 入门</a>、<a target="_blank" rel="noopener" href="https://support.claude.com/en/articles/13854387-schedule-recurring-tasks-in-claude-cowork">定时任务</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Grok-Bot/" rel="tag"># Grok Bot</a>
+              <a href="/tags/AI-Agent/" rel="tag"># AI Agent</a>
+              <a href="/tags/%E6%A1%8C%E9%9D%A2Agent/" rel="tag"># 桌面Agent</a>
+              <a href="/tags/MCP/" rel="tag"># MCP</a>
+              <a href="/tags/OpenClaw/" rel="tag"># OpenClaw</a>
+              <a href="/tags/Manus/" rel="tag"># Manus</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/09/22/Jev%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%EF%BC%9A%E4%BB%8E%E5%8E%9F%E7%90%86%E4%B8%8E%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80%E5%88%B0%E5%BA%94%E7%94%A8%E5%92%8C%E6%9C%AA%E6%9D%A5/" rel="prev" title="Jev模型解析：从原理与理论基础到应用和未来">
+                  <i class="fa fa-angle-left"></i> Jev模型解析：从原理与理论基础到应用和未来
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"dd115070bd62beba2eb0435b90b219bb"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
