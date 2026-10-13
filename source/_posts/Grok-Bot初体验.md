@@ -17,6 +17,10 @@ description: 从执行环境、权限审批、连接器（MCP）、浏览器与�
 
 所以这篇不写流水账，而是借这次体验，把“桌面 Agent”拆成几个工程维度，看看 Grok Bot 怎么设计，以及 OpenClaw、Manus、Claude Cowork 各自走了哪条路。
 
+![桌面 Agent 架构概念图：云端 VM、连接器、浏览器与权限审批层](/images/grok-bot-desktop-agent-hero.jpg)
+
+*概念配图：桌面 Agent 的执行环境、连接器、浏览器控制与权限层。*
+
 > 说明：Grok Bot 部分来自官方文档和我的实际使用；其余三款只参考官方文档，没有并排实测。信息截至 2026-10-13，标注“未亲测”的条目请以官方为准。
 
 <!--more-->
