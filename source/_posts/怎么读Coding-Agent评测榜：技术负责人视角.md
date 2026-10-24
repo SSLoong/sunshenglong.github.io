@@ -25,8 +25,6 @@ description: 从 SWE-bench、Aider Polyglot 到 Terminal-Bench，拆解 Coding A
 4. 读榜时要警惕：是否同 harness、是否污染、是否饱和、是否覆盖你的语言与仓库形态、是否把默认审批误读成能力边界。
 5. 落地建议：用自家代表性任务做影子评测，要求供应商披露 harness 与工具集，不要为 1–2 个点的榜差轻易换栈。
 
-![Coding Agent 评测榜拆解示意图](/images/coding-agent-benchmark-guide.jpg)
-
 <!--more-->
 
 ## 一、评测榜在测什么：四层拆解
