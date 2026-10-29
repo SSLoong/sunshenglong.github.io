@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="从真实榜单字段、pass@k 和 SWE-bench 版本差异入手，判断 Coding Agent 分数的适用范围，并用一份内部评测记录模板把候选工具带回自己的任务中比较。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何读懂Coding-Agent评测榜">
+<meta property="og:url" content="https://devloong.com/2026/10/24/%E6%80%8E%E4%B9%88%E8%AF%BBCoding-Agent%E8%AF%84%E6%B5%8B%E6%A6%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%A7%86%E8%A7%92/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="从真实榜单字段、pass@k 和 SWE-bench 版本差异入手，判断 Coding Agent 分数的适用范围，并用一份内部评测记录模板把候选工具带回自己的任务中比较。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-24T02:30:00.000Z">
+<meta property="article:modified_time" content="2026-10-28T16:00:00.000Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="AI编程">
+<meta property="article:tag" content="Coding Agent">
+<meta property="article:tag" content="SWE-bench">
+<meta property="article:tag" content="技术负责人">
+<meta property="article:tag" content="评测">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://devloong.com/2026/10/24/%E6%80%8E%E4%B9%88%E8%AF%BBCoding-Agent%E8%AF%84%E6%B5%8B%E6%A6%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%A7%86%E8%A7%92/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/10/24/%E6%80%8E%E4%B9%88%E8%AF%BBCoding-Agent%E8%AF%84%E6%B5%8B%E6%A6%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%A7%86%E8%A7%92/","path":"2026/10/24/怎么读Coding-Agent评测榜：技术负责人视角/","title":"如何读懂Coding-Agent评测榜"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>如何读懂Coding-Agent评测榜 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E8%AF%BB%E6%87%82%E4%B8%80%E8%A1%8C%E6%88%90%E7%BB%A9"><span class="nav-number">1.</span> <span class="nav-text">先读懂一行成绩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%80%9C%E4%B8%80%E6%AC%A1%E8%BF%90%E8%A1%8C%E2%80%9D%E5%8F%AF%E4%BB%A5%E5%8C%85%E5%90%AB%E5%BE%88%E5%A4%9A%E8%BD%AE%E8%B0%83%E8%AF%95"><span class="nav-number">2.</span> <span class="nav-text">“一次运行”可以包含很多轮调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%9C%E5%8D%95%E5%90%8D%E7%A7%B0%E8%BF%98%E4%B8%8D%E5%A4%9F%EF%BC%8C%E5%BF%85%E9%A1%BB%E5%86%99%E7%89%88%E6%9C%AC"><span class="nav-number">3.</span> <span class="nav-text">榜单名称还不够，必须写版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%8A%E6%A6%9C%E5%8D%95%E7%94%A8%E6%9D%A5%E7%BC%A9%E5%B0%8F%E5%80%99%E9%80%89%E8%8C%83%E5%9B%B4"><span class="nav-number">4.</span> <span class="nav-text">把榜单用来缩小候选范围</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BB%BD%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E5%A1%AB%E5%86%99%E7%9A%84%E5%86%85%E9%83%A8%E8%AF%84%E6%B5%8B%E8%AE%B0%E5%BD%95"><span class="nav-number">5.</span> <span class="nav-text">一份可以直接填写的内部评测记录</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/10/24/%E6%80%8E%E4%B9%88%E8%AF%BBCoding-Agent%E8%AF%84%E6%B5%8B%E6%A6%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%A7%86%E8%A7%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="如何读懂Coding-Agent评测榜 | Loong's Blog">
+      <meta itemprop="description" content="从真实榜单字段、pass@k 和 SWE-bench 版本差异入手，判断 Coding Agent 分数的适用范围，并用一份内部评测记录模板把候选工具带回自己的任务中比较。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何读懂Coding-Agent评测榜
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-10-24 10:30:00" itemprop="dateCreated datePublished" datetime="2026-10-24T10:30:00+08:00">2026-10-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-10-29 00:00:00" itemprop="dateModified" datetime="2026-10-29T00:00:00+08:00">2026-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">从真实榜单字段、pass@k 和 SWE-bench 版本差异入手，判断 Coding Agent 分数的适用范围，并用一份内部评测记录模板把候选工具带回自己的任务中比较。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>看到一个 Coding Agent 的分数更高，下一步应该点开它的运行配置。一个百分比背后，可能同时变了模型、工具、测试集和预算。只记录产品名和分数，往往连比较对象都没有记完整。</p>
+<p>本文用官方页面上的字段说明怎样读榜，再给出一份内部评测记录模板。资料核验日期为 <strong>2026 年 10 月 29 日</strong>；文中的榜单数据是有日期的记录，不代表本文做过独立实测。</p>
+<span id="more"></span>
+
+<h2 id="先读懂一行成绩"><a href="#先读懂一行成绩" class="headerlink" title="先读懂一行成绩"></a>先读懂一行成绩</h2><p><a target="_blank" rel="noopener" href="https://www.tbench.ai/">Terminal-Bench 官网</a>当前展示 4.0，表头是 <code>RANK / MODEL / AGENT / RESOLUTION RATE / COST / TOKENS</code>。其中，<code>MODEL</code> 和 <code>AGENT</code> 分别标识模型与运行它的 Agent，<strong>不是两列分数</strong>。成绩在 <code>RESOLUTION RATE</code>，页面还说明误差线表示 95% 置信区间。</p>
+<p>这次读取的页面没有返回具体成绩行，因此这里只解释字段，不列排名。即使拿到完整表格，也不能把同一行的 MODEL 与 AGENT 相减，算出“脚手架提升”。要研究 Agent 的影响，需要找同模型、同数据集和预算、不同 Agent 的可比实验；要研究模型的影响，则尽量固定 Agent 及其他配置。</p>
+<p>一个能完整读取的例子来自 <a target="_blank" rel="noopener" href="https://aider.chat/docs/leaderboards/">Aider Polyglot 榜单</a>。页面保留了下面这条历史记录：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>记录值</th>
+<th>读法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model &#x2F; Date</td>
+<td>gpt-5 (high) &#x2F; 2025-08-23</td>
+<td>模型设置和测试日期；不能称为 2026 年新测试</td>
+</tr>
+<tr>
+<td>Test cases</td>
+<td>225</td>
+<td>本次运行的题目数</td>
+</tr>
+<tr>
+<td>Edit format &#x2F; Commit</td>
+<td>diff &#x2F; 32faf82</td>
+<td>编辑格式和 Aider 代码版本都是实验条件</td>
+</tr>
+<tr>
+<td>Pass rate 1 &#x2F; 2</td>
+<td>52.0% &#x2F; 88.0%</td>
+<td>需要结合该评测的尝试与反馈协议理解</td>
+</tr>
+<tr>
+<td>Correct edit format</td>
+<td>91.6%</td>
+<td>编辑输出格式指标，不是代码正确率</td>
+</tr>
+<tr>
+<td>Total cost</td>
+<td>29.0829 美元</td>
+<td>整次测试记录的总成本，不是每题或每次 API 调用的价格</td>
+</tr>
+</tbody></table>
+<p>这条记录的价值在于可以追溯条件。它不能单独回答“今天该买哪个工具”，也不能证明换到另一套 Agent 后仍能得到 88.0%。</p>
+<h2 id="“一次运行”可以包含很多轮调试"><a href="#“一次运行”可以包含很多轮调试" class="headerlink" title="“一次运行”可以包含很多轮调试"></a>“一次运行”可以包含很多轮调试</h2><p>通用的 <strong>pass@k</strong> 描述：每道题生成 k 个候选样本，至少一个通过测试的成功情况。它没有规定“第二次必须先看到第一次的错误”。原始定义及估计方法见 <a target="_blank" rel="noopener" href="https://arxiv.org/html/2107.03374v2#S2.SS1">HumanEval 论文第 2.1 节</a>。</p>
+<p>Aider 的<a target="_blank" rel="noopener" href="https://aider.chat/docs/benchmarks.html">评测说明</a>另有一个具体流程：第一次修改失败后，把测试错误反馈给模型，再给一次修改机会。这个协议中的第二轮结果，不能直接当作通用 pass@2 的定义。引用某一条成绩时，要核对它采用的协议，而不是只看字段里有没有数字 2。</p>
+<p>对 Agent 来说，一个样本通常还可能是一段完整运行轨迹：读文件、改代码、运行可见测试、继续修复，直到结束或耗尽预算。因此，“pass@1”不等于只调用一次模型，也不等于禁止调试。比较之前至少要写清三件事：</p>
+<ul>
+<li>一次样本从何时开始、何时结束，是否从干净环境重新启动。</li>
+<li>运行中能看到哪些测试反馈；最终评分测试是否对 Agent 隐藏。</li>
+<li>每题允许几个样本，如何选最终提交，是否使用了最终评分结果挑答案。</li>
+</ul>
+<p>如果一方能根据评分器反馈挑答案，另一方只能提交一次最终补丁，两个成功率就不能直接解释成能力差距。</p>
+<h2 id="榜单名称还不够，必须写版本"><a href="#榜单名称还不够，必须写版本" class="headerlink" title="榜单名称还不够，必须写版本"></a>榜单名称还不够，必须写版本</h2><p><a target="_blank" rel="noopener" href="https://www.swebench.com/">SWE-bench 官方页面</a>分别列出 Full、Verified、Lite、Multilingual 和 Multimodal。原始 Full 来自 12 个 Python 仓库，Verified 是人工筛选的 500 题子集；这不能泛化成“SWE-bench 只有 Python”，因为 Multilingual 已覆盖多个编程语言。Bash Only 视图让模型使用同一 mini-SWE-agent 环境，有助于减少脚手架差异，但仍应核对模型设置、预算和提交配置。</p>
+<p>SWE-bench Pro 由 Scale AI 维护，也不能写成原始 SWE-bench 依次升级后的同一个版本。围绕质量争议，下面三个时间点需要放在一起读：</p>
+<table>
+<thead>
+<tr>
+<th>资料</th>
+<th>能支持的结论</th>
+<th>不能外推的结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OpenAI，2026-02-23</td>
+<td>在审计的 138 道模型常失败的 Verified 题目中，59.4% 存在实质问题；OpenAI 停止报告该榜成绩</td>
+<td>59.4% 不是全部 500 题的无偏问题比例</td>
+</tr>
+<tr>
+<td>OpenAI，2026-07-08</td>
+<td>针对 Pro 的 731 题公开集，报告约 30% 有破坏性问题，并收回此前推荐</td>
+<td>该比例不能直接套用到后来修改过的 V2</td>
+</tr>
+<tr>
+<td>Scale AI，当前 V2 README</td>
+<td>V2 为 642 题、11 个仓库，并提供锁定评测协议</td>
+<td>发布者的验证说明不等于独立审计证明所有歧义都已消失</td>
+</tr>
+</tbody></table>
+<p>前两项分别见 <a target="_blank" rel="noopener" href="https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/">Verified 审计</a>和 <a target="_blank" rel="noopener" href="https://openai.com/index/separating-signal-from-noise-coding-evaluations/">Pro 审计</a>。Verified 文中所谓 <em>wide tests</em>，指测试要求了题面没说明的额外功能，并不是“测试太宽松，把错误答案放过”。这个区别会直接影响你怎样理解失败原因。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/scaleapi/SWE-bench_Pro-os/blob/main/v2/README.md">Pro V2 的协议</a>规定 Agent 阶段离线、仅放行模型端点；最终补丁在干净环境重新评分，权威成绩使用复评结果。它改变了数据和运行条件。读旧审计能知道需要警惕什么，但要评价 V2，仍需检查 V2 自己的题面、验证器和运行记录。</p>
+<h2 id="把榜单用来缩小候选范围"><a href="#把榜单用来缩小候选范围" class="headerlink" title="把榜单用来缩小候选范围"></a>把榜单用来缩小候选范围</h2><p>Aider Polyglot 的 225 道 Exercism 题覆盖 C++、Go、Java、JavaScript、Python 和 Rust，适合观察指定编辑工作流中的表现。它不能直接代替大型仓库维护、迁移或产品开发评测。终端任务也需要检查具体任务目录，不能仅凭“Terminal”就把全部任务归为运维。</p>
+<p>同样，权限只是影响结果的一部分。工具实现缺失、环境不可用、模型错误规划和审批等待，都可能让任务失败；不能默认所有 Agent 能力相同、只差审批开关。增加预算可能给调试更多机会，也可能只是让错误尝试继续，效果需要测量。</p>
+<p>我的建议是先用公开榜选出少量候选，再在自家任务中比较。先挑 10–20 个任务可以暴露明显短板，但这个规模只适合初筛：每多做对一题就可能改变数个百分点，不足以稳定判断很小的差距。</p>
+<p>任务应覆盖你真正要交给 Agent 的工作，例如缺陷修复、测试补充、跨文件修改和依赖升级。先固定验收条件，保留一部分任务不参与提示词调优；从历史 PR 取题时，只给修复前的代码和必要需求，不把答案提交或后续讨论带进上下文。基础设施故障单独记录，不能只为某一个候选不断重跑直到成功。</p>
+<h2 id="一份可以直接填写的内部评测记录"><a href="#一份可以直接填写的内部评测记录" class="headerlink" title="一份可以直接填写的内部评测记录"></a>一份可以直接填写的内部评测记录</h2><p>下面是建议模板，不是实测结果。每个任务、每次运行各填一份；未知值留空并说明原因，不把未记录的数据当作零。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">任务 ID / 类型 / 来源：</span><br><span class="line">仓库与 base commit：</span><br><span class="line">验收测试与人工判定标准（运行前确定）：</span><br><span class="line">数据集版本 / 任务与测试文件哈希：</span><br><span class="line"></span><br><span class="line">模型精确标识 / 推理设置：</span><br><span class="line">Agent 版本或 commit / 配置文件哈希：</span><br><span class="line">提示词版本 / 工具集 / 网络与文件权限 / 审批规则：</span><br><span class="line">环境镜像或依赖锁定版本：</span><br><span class="line">单次运行定义 / 每题样本数 / 最终提交选择规则：</span><br><span class="line">允许的测试反馈 / 隐藏评分测试：</span><br><span class="line">时间、token、工具调用与费用上限：</span><br><span class="line"></span><br><span class="line">结束状态：成功 / 失败 / 超时 / 基础设施故障</span><br><span class="line">最终补丁 / 完整轨迹 / 测试日志位置：</span><br><span class="line">模型费用 / 计算与工具费用 / 计价日期与币种：</span><br><span class="line">运行耗时 / 人工审批分钟数 / 人工审查与返工分钟数：</span><br><span class="line">失败分类、涉及文件、可复现证据：</span><br><span class="line">人工是否接受 / 需要哪些额外修改：</span><br></pre></td></tr></table></figure>
+
+<p>汇总时同时报任务数、成功数、各类失败数和费用分布。把所有成功与失败尝试的费用相加，得到总运行成本；再除以成功任务数，得到这批任务的“每个成功任务摊销成本”。成功数为零时该指标不可计算，不能写成零。人工审查与返工时间另外报告，若折算成金额，要说明采用的费率。</p>
+<p>为了避免只看平均值，还应保留最贵、最慢和返工最多的案例。正式比较小幅差异时，在同一组任务上重复运行，并评估任务间差异与运行波动。没有一个通用的“超过 5 个百分点才能换工具”门槛：迁移成本、关键任务表现、延迟和审查负担，都可能比总分更影响决定。</p>
+<p>最终应能说清楚：在什么版本、权限和预算下，哪一类任务值得交给哪个工具，失败时需要多少人工接手。这样的结论，才足以支撑一次实际选型。</p>
+<blockquote>
+<p>核验说明：本文依据 2026-10-29 可访问的官方资料修订；Aider 条目保留其原测试日期。未运行上述基准，也未进行团队实测。内部评测模板与选型建议为作者的方法建议，不是官方评测协议。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AI%E7%BC%96%E7%A8%8B/" rel="tag"># AI编程</a>
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/Coding-Agent/" rel="tag"># Coding Agent</a>
+              <a href="/tags/%E8%AF%84%E6%B5%8B/" rel="tag"># 评测</a>
+              <a href="/tags/SWE-bench/" rel="tag"># SWE-bench</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/13/Grok-Bot%E5%88%9D%E4%BD%93%E9%AA%8C/" rel="prev" title="从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比">
+                  <i class="fa fa-angle-left"></i> 从架构看桌面 Agent：Grok Bot 与 OpenClaw、Manus、Claude Cowork 对比
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/10/26/%E4%BB%8E%E5%BB%BA%E8%AE%AE%E8%A1%A5%E4%B8%81%E5%88%B0%E9%AA%8C%E8%AF%81%E5%90%8E%E5%BC%80%20PR%EF%BC%9AGitHub%20Agentic%20Autofix%20GA%20%E6%80%8E%E4%B9%88%E8%90%BD%E5%9C%B0/" rel="next" title="GitHub Agentic Autofix：修复能力、验证边界与试点方法">
+                  GitHub Agentic Autofix：修复能力、验证边界与试点方法 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"e926aeed43495f7519541fccffeafa2e"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

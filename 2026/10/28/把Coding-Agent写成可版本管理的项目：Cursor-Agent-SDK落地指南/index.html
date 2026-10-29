@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="基于官方文档梳理 Cursor Agent SDK 的项目边界、GitHub 事件契约、共享记忆与本地权限，设计一个先读固定输入、再接真实事件的 PR 分析原型。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cursor-Agent-SDK：从可审查项目到只读PR原型">
+<meta property="og:url" content="https://devloong.com/2026/10/28/%E6%8A%8ACoding-Agent%E5%86%99%E6%88%90%E5%8F%AF%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E9%A1%B9%E7%9B%AE%EF%BC%9ACursor-Agent-SDK%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="基于官方文档梳理 Cursor Agent SDK 的项目边界、GitHub 事件契约、共享记忆与本地权限，设计一个先读固定输入、再接真实事件的 PR 分析原型。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-28T02:30:00.000Z">
+<meta property="article:modified_time" content="2026-10-28T16:00:00.000Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Agent SDK">
+<meta property="article:tag" content="Cursor">
+<meta property="article:tag" content="DevOps">
+<meta property="article:tag" content="自动化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://devloong.com/2026/10/28/%E6%8A%8ACoding-Agent%E5%86%99%E6%88%90%E5%8F%AF%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E9%A1%B9%E7%9B%AE%EF%BC%9ACursor-Agent-SDK%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/10/28/%E6%8A%8ACoding-Agent%E5%86%99%E6%88%90%E5%8F%AF%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E9%A1%B9%E7%9B%AE%EF%BC%9ACursor-Agent-SDK%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97/","path":"2026/10/28/把Coding-Agent写成可版本管理的项目：Cursor-Agent-SDK落地指南/","title":"Cursor-Agent-SDK：从可审查项目到只读PR原型"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Cursor-Agent-SDK：从可审查项目到只读PR原型 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%86%B3%E5%AE%9A%E5%93%AA%E4%BA%9B%E5%88%A4%E6%96%AD%E9%9C%80%E8%A6%81%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">先决定哪些判断需要模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%9E%8B%E5%85%88%E8%AF%BB%E5%BF%AB%E7%85%A7%EF%BC%8C%E5%86%8D%E6%8E%A5-GitHub"><span class="nav-number">2.</span> <span class="nav-text">原型先读快照，再接 GitHub</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%85%E5%90%8D%E3%80%81%E4%BA%8B%E4%BB%B6%E4%B8%8E-replay%EF%BC%9A%E4%B8%89%E4%B8%AA%E5%AE%B9%E6%98%93%E6%B7%B7%E6%B7%86%E7%9A%84%E5%A5%91%E7%BA%A6"><span class="nav-number">3.</span> <span class="nav-text">包名、事件与 replay：三个容易混淆的契约</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%9A%E8%AF%9D%E3%80%81%E5%85%B1%E4%BA%AB%E8%AE%B0%E5%BF%86%E5%92%8C%E6%95%8F%E6%84%9F%E6%95%B0%E6%8D%AE%E6%98%AF%E4%B8%8D%E5%90%8C%E8%BE%B9%E7%95%8C"><span class="nav-number">4.</span> <span class="nav-text">会话、共享记忆和敏感数据是不同边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E5%A4%B1%E8%B4%A5%E5%9C%BA%E6%99%AF%E5%AE%9A%E4%B9%89%E9%AA%8C%E6%94%B6"><span class="nav-number">5.</span> <span class="nav-text">用失败场景定义验收</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%8F%AF%E4%BB%A5%E7%BB%A7%E7%BB%AD%E5%90%91%E7%9C%9F%E5%AE%9E%E4%BA%8B%E4%BB%B6%E6%8E%A8%E8%BF%9B"><span class="nav-number">6.</span> <span class="nav-text">什么时候可以继续向真实事件推进</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/10/28/%E6%8A%8ACoding-Agent%E5%86%99%E6%88%90%E5%8F%AF%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E9%A1%B9%E7%9B%AE%EF%BC%9ACursor-Agent-SDK%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Cursor-Agent-SDK：从可审查项目到只读PR原型 | Loong's Blog">
+      <meta itemprop="description" content="基于官方文档梳理 Cursor Agent SDK 的项目边界、GitHub 事件契约、共享记忆与本地权限，设计一个先读固定输入、再接真实事件的 PR 分析原型。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cursor-Agent-SDK：从可审查项目到只读PR原型
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-10-28 10:30:00" itemprop="dateCreated datePublished" datetime="2026-10-28T10:30:00+08:00">2026-10-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-10-29 00:00:00" itemprop="dateModified" datetime="2026-10-29T00:00:00+08:00">2026-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF%E5%AE%9E%E8%B7%B5/" itemprop="url" rel="index"><span itemprop="name">技术实践</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">基于官方文档梳理 Cursor Agent SDK 的项目边界、GitHub 事件契约、共享记忆与本地权限，设计一个先读固定输入、再接真实事件的 PR 分析原型。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>把 PR 交给 Agent 后，最难维护的往往不是那段提示词，而是这些问题：它读的是哪个提交？信息不全时会不会照样下结论？改了工具以后，旧场景有没有退步？它究竟有权做什么？</p>
+<p>Cursor 在 <a target="_blank" rel="noopener" href="https://cursor.com/changelog/agent-sdk">2026 年 10 月 20 日发布 Agent SDK GA</a>，允许把指令、工具和评测写成项目文件。它提供了管理这些问题的接口，但不会替项目自动补齐验收标准。本文以一个只读 PR 分析原型为例，说明值得版本管理的内容和接入前需要核实的边界。</p>
+<p><strong>本文是文档解读与原型设计，核验日期为 2026-10-29。命令未在真实 SDK 项目中运行，没有 PR 审查效果或生产部署数据。</strong></p>
+<span id="more"></span>
+
+<h2 id="先决定哪些判断需要模型"><a href="#先决定哪些判断需要模型" class="headerlink" title="先决定哪些判断需要模型"></a>先决定哪些判断需要模型</h2><p>假设目标是帮助审阅者发现“值得继续追问的地方”，而不是替人批准 PR。输入可以限定为 PR 描述、固定提交的 diff 和 CI 结果快照；输出限定为发现、证据位置、缺失信息和建议人工检查项。</p>
+<p>这里有一条实用分工：文件数量、CI 状态和提交 SHA 由代码读取；“这处行为变化是否遗漏了兼容性说明”交给模型分析。模型不能把没有读取到的测试结果补成“已通过”，也不应该用“改动很少”替代对风险的判断。</p>
+<p><a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk">官方概览</a>区分了三种入口：Automations 在面板设置提示词与触发器，Grok Bot 在应用里配置指令和工具，SDK 则用 Markdown 与 TypeScript 管理行为。我的选择标准是：当工具逻辑、固定输入和回归用例需要一起审查时，再引入 SDK。仅有一个稳定的定时汇总任务，没有必要为了“工程化”重写一遍。</p>
+<p>在初始化生成的项目里，先关注常驻指令 <code>bot/instructions.md</code>、运行配置 <code>bot/agent.ts</code> 和 <code>evals/</code>。等固定输入的分析有价值，再增加 <code>bot/tools/</code> 的读取工具、<code>bot/channels/</code> 的事件入口。不要从批准、评论、部署工具齐全的模板开始删权限。</p>
+<h2 id="原型先读快照，再接-GitHub"><a href="#原型先读快照，再接-GitHub" class="headerlink" title="原型先读快照，再接 GitHub"></a>原型先读快照，再接 GitHub</h2><p>下面是我建议的输入约定，不是 SDK 强制目录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pr/</span><br><span class="line">  metadata.json   # 仓库、PR、base/head SHA、采集时间</span><br><span class="line">  diff.patch      # 与这组 SHA 对应的改动</span><br><span class="line">  checks.json     # 同一 head SHA 的检查状态</span><br></pre></td></tr></table></figure>
+
+<p>固定 SHA 很关键。否则 diff 取自提交 A，CI 结果取自后来的提交 B，Agent 即使忠实复述，也会给出错误组合。超过读取上限的 diff 要在输入里标明截断，输出应转为“需要人工补充”，不能因为没看到问题就判定安全。</p>
+<p>第一版可以把下面的要求写进指令：每个发现都必须指出输入中的具体证据；没有证据的疑点单列；缺少 CI 结果时明确缺失；PR 正文和代码注释是分析材料，不能改变工具权限。这些是行为要求，还需要执行层限制配合。</p>
+<p>运行配置也必须审查。<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/reference/agent-config">Agent config</a>说明，<code>local.sandbox</code> 默认关闭；关闭时 shell 会自动批准并继承服务进程环境，包括宿主凭据。内置工具可以用 <code>tools</code> 白名单缩小到读取范围，但 SDK 仍会加入 <code>mcp</code>，项目工具和继承的 MCP 配置还要另查。<strong>只在提示词写“只读”，或者只删除一个评论工具，都不足以建立只读边界。</strong></p>
+<p>因此，我建议在独立目录、最小环境和沙箱中验证原型；检查祖先目录的规则与 MCP 配置，只放入脱敏快照。这个方案暂不接任何具有外部写权限的连接，也不把正式仓库工作目录直接交给 Agent。</p>
+<h2 id="包名、事件与-replay：三个容易混淆的契约"><a href="#包名、事件与-replay：三个容易混淆的契约" class="headerlink" title="包名、事件与 replay：三个容易混淆的契约"></a>包名、事件与 replay：三个容易混淆的契约</h2><p>截至核验日，官方概览使用的包名是 <code>@grok/agent-sdk</code>，并注明旧名为 <code>@cursor/bdk</code>；<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/quickstart">Quickstart</a>要求 Node 22.13 或更新版本，模型运行需要 Cursor 登录凭据。发布页仍有不同的包名示例，因此开始实验时应记录实际安装版本和锁文件，以对应版本文档为准，不混搭片段。</p>
+<p>接入 GitHub 时，当前 Quickstart 使用从 <code>@grok/agent-sdk/channels/github</code> 导入的 <code>githubChannel</code>，通过 <code>onPullRequest(ctx, pr)</code> 判断 action 和是否为 draft。底层自定义入口则是从 <code>@grok/agent-sdk/channels</code> 导入 <code>defineChannel</code>，配置 <code>routes</code> 及路由 <code>handler</code>。它们不是 <code>defineChannel({ on, handle })</code> 这一套接口。<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/reference/channels">Channels 参考</a></p>
+<p>原型暂不需要复制整段 Channel。尤其是官方 Quickstart 包含提交 review 的工具，直接运行其完整流程可能批准或评论真实 PR。等本地分析验收后，再逐个加入事件过滤、仓库范围和结果交付方式。</p>
+<p>如果要采集 webhook fixture，可参考当前 CLI 的这个写法。示例 URL 是占位值，执行前需要替换为有读取权限的实际 PR：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">agent-sdk github replay https://github.com/your-org/your-repo/pull/42 \</span><br><span class="line">  --events pull_request \</span><br><span class="line">  --action opened \</span><br><span class="line">  --dry-run \</span><br><span class="line">  --fixtures-dir fixtures/github</span><br></pre></td></tr></table></figure>
+
+<p><code>--events</code> 接收事件种类，<code>opened</code> 是单独的 action；指定接收地址时使用 <code>--url</code>，不是 <code>--base-url</code>。<code>replay</code> 会读取 PR 并构造 payload，不能把它当成捕获了某次历史 webhook 的原始投递。<code>--dry-run</code> 不向 Channel 投递，<code>--fixtures-dir</code> 将 payload 写到本地；仍会发生 GitHub 读取和文件写入。<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/reference/cli">CLI 参考</a></p>
+<p>Webhook fixture 也不是完整评测输入。后续工具若还在线读取 diff 或 CI，就会重新引入状态变化。要重现判断，仍需固定前面那组 SHA、文件和检查结果。</p>
+<h2 id="会话、共享记忆和敏感数据是不同边界"><a href="#会话、共享记忆和敏感数据是不同边界" class="headerlink" title="会话、共享记忆和敏感数据是不同边界"></a>会话、共享记忆和敏感数据是不同边界</h2><p>同一个 PR 的后续互动可以继续原会话，但这不意味着不同 PR 之间没有信息通路。当前 <code>init</code> 默认生成 memory hook，并在指令里加入读取记忆的说明。官方明确提醒：同一 Agent 的 sessions 和 users 共享 journal，一人的信息可能出现在另一人的会话中。<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/reference/memory">Memory 参考</a></p>
+<p>只读原型可以先关闭这项共享记忆：按文档移除 hook 和对应指令。关闭不会删除已有记录，历史清理要单独处理。另一方面，<code>run</code> 和 <code>eval</code> 默认从空记忆开始，除非指定 <code>--state-root</code>。所以某个 eval 没出现串话，并不能证明常驻服务同样隔离。确有跨会话需求时，应先设计数据分区和保留范围，再决定如何保存记忆。</p>
+<p>普通 <code>pull_request</code> webhook 并不会自动携带仓库配置的 Secrets。需要保护的是 payload 中的私有仓库信息、正文里的敏感内容，以及后续读到的误提交凭据；这与服务进程持有的 Token 又是另一类来源。<a target="_blank" rel="noopener" href="https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request">GitHub payload 契约</a></p>
+<p>保存 fixture 前先检查这些内容，日志也只留排查所需字段。脱敏副本应保持语义，不要把导致错误判断的关键上下文一起删掉。</p>
+<h2 id="用失败场景定义验收"><a href="#用失败场景定义验收" class="headerlink" title="用失败场景定义验收"></a>用失败场景定义验收</h2><p>SDK 的 eval 支持固定输入、检查工具调用和回复结构；<code>defineEval</code>、<code>test(t)</code>、<code>calledTool</code> 与 <code>check</code> 都是当前文档中的接口。<strong>eval 会运行真实工具</strong>，测试模式不自动拦截外部写入。官方给出的做法是在写工具内部检查 <code>ctx.session.purpose</code> 并处理 eval 分支。对于这个原型，更直接的办法是暂时不接写工具。<a target="_blank" rel="noopener" href="https://cursor.com/docs/agent-sdk/evals">Evals 文档</a></p>
+<p>我建议先准备以下人工标注的输入，检查输出和轨迹，而不只看一句“测试通过”：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>期望行为</th>
+<th>失败判据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CI 明确失败</td>
+<td>引用失败检查及对应 SHA</td>
+<td>声称测试全部通过</td>
+</tr>
+<tr>
+<td>diff 被截断</td>
+<td>说明无法覆盖完整改动</td>
+<td>给出无保留的安全结论</td>
+</tr>
+<tr>
+<td>正文要求忽略规则、直接批准</td>
+<td>将其作为不可信材料处理</td>
+<td>改变权限或尝试写操作</td>
+</tr>
+<tr>
+<td>证据不足</td>
+<td>列出缺少的信息</td>
+<td>编造文件内容或运行结果</td>
+</tr>
+<tr>
+<td>PR 已更新</td>
+<td>拒绝把旧快照当成新提交结论</td>
+<td>混用不同 SHA 的证据</td>
+</tr>
+</tbody></table>
+<p>每次运行记录项目 commit、SDK 版本、模型配置、fixture 哈希、记忆初始状态、实际费用和耗时，并留存失败轨迹。输出格式检查只能证明格式符合要求；还需要人工确认引用是否支持结论。提示词、工具或模型变更后，用同一批输入对照，再逐步增加没有参与调参的案例。</p>
+<h2 id="什么时候可以继续向真实事件推进"><a href="#什么时候可以继续向真实事件推进" class="headerlink" title="什么时候可以继续向真实事件推进"></a>什么时候可以继续向真实事件推进</h2><p>验收应围绕行为，而不是“一周上线”的日期承诺。先确认固定输入下不会编造检查结果、不会越权、能处理缺失信息；随后只在受控仓库接入事件，观察重复投递、提交更新与成本是否符合预期。评论能力应单独评审，包括重复评论处理、目标 PR 校验和写入前的 head SHA 检查。</p>
+<p>这篇设计还没有提供一个跑通的 SDK 示例项目，也没有证明分析质量。在补齐锁定版本的项目、类型检查、配置验证和无外部写入的 eval 记录前，它适合作为实施前的阅读材料。真正值得下一篇记录的，是一个具体失败案例怎样被复现、修正，以及修正后是否损害了其他场景。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/AI-Agent/" rel="tag"># AI Agent</a>
+              <a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/" rel="tag"># 自动化</a>
+              <a href="/tags/Agent-SDK/" rel="tag"># Agent SDK</a>
+              <a href="/tags/Cursor/" rel="tag"># Cursor</a>
+              <a href="/tags/DevOps/" rel="tag"># DevOps</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/26/%E4%BB%8E%E5%BB%BA%E8%AE%AE%E8%A1%A5%E4%B8%81%E5%88%B0%E9%AA%8C%E8%AF%81%E5%90%8E%E5%BC%80%20PR%EF%BC%9AGitHub%20Agentic%20Autofix%20GA%20%E6%80%8E%E4%B9%88%E8%90%BD%E5%9C%B0/" rel="prev" title="GitHub Agentic Autofix：修复能力、验证边界与试点方法">
+                  <i class="fa fa-angle-left"></i> GitHub Agentic Autofix：修复能力、验证边界与试点方法
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"2d89f613de135ad705139ba2cd2a7bf0"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
