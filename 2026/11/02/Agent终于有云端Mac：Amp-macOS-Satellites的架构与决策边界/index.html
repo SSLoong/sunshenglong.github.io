@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Amp 发布 macOS Satellites，让 Linux orb 按需启动云端 Mac 执行 iOS 构建与模拟器验证。本文解读其架构设计、对比整台 Mac 运行 Agent 的取舍，并给出 iOS&#x2F;客户端负责人的决策清单。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent 终于有云端 Mac：Amp macOS Satellites 的架构与决策边界">
+<meta property="og:url" content="https://devloong.com/2026/11/02/Agent%E7%BB%88%E4%BA%8E%E6%9C%89%E4%BA%91%E7%AB%AFMac%EF%BC%9AAmp-macOS-Satellites%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="Amp 发布 macOS Satellites，让 Linux orb 按需启动云端 Mac 执行 iOS 构建与模拟器验证。本文解读其架构设计、对比整台 Mac 运行 Agent 的取舍，并给出 iOS&#x2F;客户端负责人的决策清单。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/amp-macos-satellites-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/amp-macos-satellites-architecture.jpg">
+<meta property="og:image" content="https://devloong.com/images/amp-macos-satellites-decision.jpg">
+<meta property="article:published_time" content="2026-11-02T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-05T12:49:44.325Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Amp">
+<meta property="article:tag" content="Coding Agent">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content="macOS">
+<meta property="article:tag" content="云端 Agent">
+<meta property="article:tag" content="技术负责人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/amp-macos-satellites-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/02/Agent%E7%BB%88%E4%BA%8E%E6%9C%89%E4%BA%91%E7%AB%AFMac%EF%BC%9AAmp-macOS-Satellites%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/02/Agent%E7%BB%88%E4%BA%8E%E6%9C%89%E4%BA%91%E7%AB%AFMac%EF%BC%9AAmp-macOS-Satellites%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C/","path":"2026/11/02/Agent终于有云端Mac：Amp-macOS-Satellites的架构与决策边界/","title":"Agent 终于有云端 Mac：Amp macOS Satellites 的架构与决策边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Agent 终于有云端 Mac：Amp macOS Satellites 的架构与决策边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%AE%A9%E6%95%B4%E5%8F%B0%E4%BA%91-Mac-%E8%B7%91-Agent"><span class="nav-number">1.</span> <span class="nav-text">为什么不让整台云 Mac 跑 Agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Satellite-%E6%9E%B6%E6%9E%84%EF%BC%9ALinux-%E4%B8%BB%E7%BC%96%E6%8E%92-Mac-%E6%8C%89%E9%9C%80%E6%89%A7%E8%A1%8C%E9%9D%A2"><span class="nav-number">2.</span> <span class="nav-text">Satellite 架构：Linux 主编排 + Mac 按需执行面</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%95%9C%E5%83%8F%E4%B8%8E-Xcode-%E7%89%88%E6%9C%AC"><span class="nav-number">2.1.</span> <span class="nav-text">镜像与 Xcode 版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E4%BF%9D%E6%B4%BB%E7%AD%96%E7%95%A5"><span class="nav-number">2.2.</span> <span class="nav-text">生命周期与保活策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9-iOS-%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E7%9A%84%E5%86%B3%E7%AD%96%E6%B8%85%E5%8D%95"><span class="nav-number">3.</span> <span class="nav-text">对 iOS&#x2F;客户端负责人的决策清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C"><span class="nav-number">3.1.</span> <span class="nav-text">能力边界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6%E9%9D%A2"><span class="nav-number">3.2.</span> <span class="nav-text">控制面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E8%B4%B9"><span class="nav-number">3.3.</span> <span class="nav-text">计费</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%8D%AE%E5%9B%9E%E4%BC%A0%E4%B8%8E%E9%AA%8C%E8%AF%81"><span class="nav-number">3.4.</span> <span class="nav-text">证据回传与验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%95%E7%82%B9%E5%BB%BA%E8%AE%AE%EF%BC%9A%E5%B0%8F%E8%8C%83%E5%9B%B4%E4%BB%BB%E5%8A%A1%E3%80%81%E7%9C%8B%E8%AF%81%E6%8D%AE%E3%80%81%E7%9B%AF%E7%94%A8%E9%87%8F"><span class="nav-number">4.</span> <span class="nav-text">试点建议：小范围任务、看证据、盯用量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%B9%E7%95%8C%E4%B8%8E%E6%9C%AA%E9%AA%8C%E8%AF%81%E5%A3%B0%E6%98%8E"><span class="nav-number">5.</span> <span class="nav-text">边界与未验证声明</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/02/Agent%E7%BB%88%E4%BA%8E%E6%9C%89%E4%BA%91%E7%AB%AFMac%EF%BC%9AAmp-macOS-Satellites%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Agent 终于有云端 Mac：Amp macOS Satellites 的架构与决策边界 | Loong's Blog">
+      <meta itemprop="description" content="Amp 发布 macOS Satellites，让 Linux orb 按需启动云端 Mac 执行 iOS 构建与模拟器验证。本文解读其架构设计、对比整台 Mac 运行 Agent 的取舍，并给出 iOS&#x2F;客户端负责人的决策清单。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Agent 终于有云端 Mac：Amp macOS Satellites 的架构与决策边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-02 10:00:00" itemprop="dateCreated datePublished" datetime="2026-11-02T10:00:00+08:00">2026-11-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-11-05 20:49:44" itemprop="dateModified" datetime="2026-11-05T20:49:44+08:00">2026-11-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">Amp 发布 macOS Satellites，让 Linux orb 按需启动云端 Mac 执行 iOS 构建与模拟器验证。本文解读其架构设计、对比整台 Mac 运行 Agent 的取舍，并给出 iOS/客户端负责人的决策清单。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Amp 在 2026 年 10 月 29 日<a target="_blank" rel="noopener" href="https://ampcode.com/news/macos-satellites">发布 macOS Satellites</a>：Agent 线程仍跑在 Linux orb，但现在可以按需启动一台短时云端 Mac，用于 Xcode 构建、iOS 模拟器运行和 GUI 验证。编辑、后端和大部分开发任务留在 Linux，只把必须用 Mac 的工作交给 Satellite。</p>
+<p>对 iOS 或 macOS 项目负责人来说，最容易误判的是两件事：以为”按需启动 Mac”等于”Agent 不能自主决策”；以为只要项目包含 iOS 代码，就应该让整个线程常驻在 Mac 上。真正值得评估的是，这套拆分架构能否覆盖团队的构建与验证流程,以及 Satellite 的计费与生命周期是否匹配试点预算。</p>
+<p>本文是截至 <strong>2026-11-02</strong> 的<a target="_blank" rel="noopener" href="https://ampcode.com/docs/orbs/mac">官方文档</a>与公告解读，没有加入 waitlist 或运行真实 iOS 构建，也没有本团队的成功率、时延或成本数据。</p>
+<span id="more"></span>
+
+<p><img src="/images/amp-macos-satellites-hero.jpg" alt="Amp macOS Satellites"></p>
+<h2 id="为什么不让整台云-Mac-跑-Agent"><a href="#为什么不让整台云-Mac-跑-Agent" class="headerlink" title="为什么不让整台云 Mac 跑 Agent"></a>为什么不让整台云 Mac 跑 Agent</h2><p>当 Agent 需要访问 macOS 环境时,有两条路径：让整个线程运行在云端 Mac（可称为”Morbs”），或者用 Linux orb 编排、按需调用 Mac 执行面（即 Satellites）。Amp 选择后者,理由集中在启动速度与资源成本。</p>
+<p><a target="_blank" rel="noopener" href="https://ampcode.com/news/macos-satellites">官方说明</a>指出：Docker 与后端服务在 macOS 上启动较慢；为每个线程常驻一台 Mac 的磁盘成本高。因此,将架构拆成 <strong>Linux orb 主编排 + 按需 Mac Satellite</strong>，编辑、后端和非 macOS 工具链仍在 Linux，只在需要构建、运行模拟器或截图时启动 Mac。</p>
+<p>这个决策假设 Agent 大部分时间在编辑代码、读文档、运行后端或分析日志，而不是一直操作 Xcode。Quinn Slack 在公开讨论中提到,即使是偏 macOS 的开发,Agent 实际需要 Mac 的时间占比约为 35%。<strong>这是 Quinn 的公开估算，不是团队实测数据或所有 iOS 项目的普遍真理</strong>；但它说明了拆分架构的适用场景：当编辑与调查工作可以在 Linux 完成时,按需 Mac 可以降低常驻成本。</p>
+<p>对于必须全程在 macOS 环境调试的场景（例如持续交互式 GUI 测试、需要常驻 macOS 系统服务的工具），这套拆分可能不适用。评估时,应明确哪些任务确实需要 Mac 环境,而不是假设所有客户端开发都必须常驻 Mac。</p>
+<h2 id="Satellite-架构：Linux-主编排-Mac-按需执行面"><a href="#Satellite-架构：Linux-主编排-Mac-按需执行面" class="headerlink" title="Satellite 架构：Linux 主编排 + Mac 按需执行面"></a>Satellite 架构：Linux 主编排 + Mac 按需执行面</h2><p>下图展示了 Amp macOS Satellites 的工作架构：</p>
+<p><img src="/images/amp-macos-satellites-architecture.jpg" alt="Amp macOS Satellites 架构"></p>
+<p><a target="_blank" rel="noopener" href="https://ampcode.com/docs/orbs/mac">官方文档</a>说明，一个使用 Satellite 的 Agent 线程包含两台机器：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>运行环境</th>
+<th>负责内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Linux orb</td>
+<td>主线程</td>
+<td>编辑器、开发服务器、后端、Agent 决策逻辑</td>
+</tr>
+<tr>
+<td>Mac Satellite</td>
+<td>按需启动</td>
+<td>Xcode、iOS 模拟器、macOS 构建工具、GUI 截图</td>
+</tr>
+</tbody></table>
+<p>代码在 Mac 执行命令前同步；gitignored 文件（如本地 <code>.env</code>）保留在 orb 上。构建产物、日志和截图会回传到 orb。Mac 可以通过 portals 访问 orb 上运行的后端服务，实现前后端联调。用户可在独立的 Mac tab 中观看或接管操作。</p>
+<p>Mac 约 30 秒启动，配备 Xcode、模拟器和 Homebrew。它是<strong>全新且不持久化</strong>的：用完后保活 20 分钟以便后续 follow-up 复用构建缓存，之后删除；归档线程或用户要求停止可立即删除。这意味着 Satellite 不能用作需要长期保留状态的环境，也不能假设下一次启动时会继承上一次的系统设置。</p>
+<h3 id="镜像与-Xcode-版本"><a href="#镜像与-Xcode-版本" class="headerlink" title="镜像与 Xcode 版本"></a>镜像与 Xcode 版本</h3><p>当前提供三种镜像（均为 Apple Silicon）：</p>
+<table>
+<thead>
+<tr>
+<th>镜像名称</th>
+<th>Xcode 版本</th>
+<th>模拟器 iOS 版本</th>
+<th>默认 Xcode</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>macos-27</td>
+<td>26.6, 27.0–27.2</td>
+<td>27.0–27.2</td>
+<td>27.2</td>
+</tr>
+<tr>
+<td>macos-26</td>
+<td>见文档</td>
+<td>见文档</td>
+<td>见文档</td>
+</tr>
+<tr>
+<td>macos-15</td>
+<td>见文档</td>
+<td>见文档</td>
+<td>见文档</td>
+</tr>
+</tbody></table>
+<p>默认使用 <code>macos-27</code>。项目可在 Settings → Satellites 选择镜像；若项目钉了 Xcode 版本（如 <code>.xcode-version</code> 文件），系统会自动匹配对应镜像。这避免了手动管理 Xcode 安装，但也意味着需要的 Xcode 版本必须已包含在可用镜像中。</p>
+<h3 id="生命周期与保活策略"><a href="#生命周期与保活策略" class="headerlink" title="生命周期与保活策略"></a>生命周期与保活策略</h3><p>Satellite 的生命周期直接影响构建缓存复用：</p>
+<ol>
+<li><strong>按需启动</strong>：Agent 首次需要 Mac 环境时启动，约 30 秒。</li>
+<li><strong>执行任务</strong>：运行构建、测试、模拟器或截图。</li>
+<li><strong>保活 20 分钟</strong>：任务完成后保持运行，以便后续 follow-up 复用已安装的依赖和构建缓存。</li>
+<li><strong>删除</strong>：20 分钟无活动后删除；用户归档线程或要求停止可立即删除。</li>
+</ol>
+<p>这个设计适合”修改代码 → 构建 → 验证 → 再修改”的迭代流程，但不适合需要跨多个小时或天级别保留环境的场景。每次新启动的 Mac 都是干净环境，依赖需要重新安装，但 20 分钟窗口内的后续操作可以复用缓存。</p>
+<h2 id="对-iOS-客户端负责人的决策清单"><a href="#对-iOS-客户端负责人的决策清单" class="headerlink" title="对 iOS&#x2F;客户端负责人的决策清单"></a>对 iOS&#x2F;客户端负责人的决策清单</h2><p>下图总结了评估 Amp macOS Satellites 时的三个维度：</p>
+<p><img src="/images/amp-macos-satellites-decision.jpg" alt="决策清单"></p>
+<h3 id="能力边界"><a href="#能力边界" class="headerlink" title="能力边界"></a>能力边界</h3><table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>Amp macOS Satellites 当前状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>能否按需启动云端 Mac</td>
+<td>是，约 30 秒启动全新 Mac</td>
+</tr>
+<tr>
+<td>代码编辑在哪里</td>
+<td>Linux orb</td>
+</tr>
+<tr>
+<td>构建与模拟器在哪里</td>
+<td>Mac Satellite</td>
+</tr>
+<tr>
+<td>能否回传截图、日志、构建产物</td>
+<td>是</td>
+</tr>
+<tr>
+<td>能否访问 orb 上的后端服务</td>
+<td>是，通过 portals</td>
+</tr>
+<tr>
+<td>Mac 是否持久化</td>
+<td>否，ephemeral + 20 分钟保活</td>
+</tr>
+</tbody></table>
+<p>这些是架构能力，不是权限或审批问题。Agent 可以自主决定何时启动 Satellite，用户可以在 Mac tab 观看或接管。</p>
+<h3 id="控制面"><a href="#控制面" class="headerlink" title="控制面"></a>控制面</h3><table>
+<thead>
+<tr>
+<th>检查项</th>
+<th>当前设置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>谁决定何时启动 Mac</td>
+<td>Agent 自主决策</td>
+</tr>
+<tr>
+<td>用户能否观看 Mac 操作</td>
+<td>可以，独立 Mac tab</td>
+</tr>
+<tr>
+<td>用户能否接管 Mac</td>
+<td>可以</td>
+</tr>
+<tr>
+<td>能否关闭 Satellites 功能</td>
+<td>可以，在 Settings → Experimental Features</td>
+</tr>
+<tr>
+<td>访问方式</td>
+<td>Beta waitlist，Settings → Experimental Features；每天 Move Me Up 可提前</td>
+</tr>
+</tbody></table>
+<p>“按需启动”不等于”每次都需要人工批准”。这是产品设计的权限边界，不是 Agent 模型能力不足。如果团队需要先观察再授权,可以在试点阶段保持 Mac tab 可见,或在 Settings 中暂时关闭 Satellites。</p>
+<h3 id="计费"><a href="#计费" class="headerlink" title="计费"></a>计费</h3><p><a target="_blank" rel="noopener" href="https://ampcode.com/news/macos-satellites">官方计费页面</a>公布的 Satellite 规格与价格：</p>
+<table>
+<thead>
+<tr>
+<th>规格</th>
+<th>CPU</th>
+<th>内存</th>
+<th>价格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mac.medium</td>
+<td>6 CPU</td>
+<td>14 GB</td>
+<td><strong>$2 USD&#x2F;小时</strong></td>
+</tr>
+<tr>
+<td>mac.large</td>
+<td>12 CPU</td>
+<td>28 GB</td>
+<td><strong>$4 USD&#x2F;小时</strong></td>
+</tr>
+</tbody></table>
+<p>默认启动 <code>mac.medium</code>；Agent 可以要求 <code>mac.large</code>，或者用户可在 Settings → Experimental Features 关闭 medium 以强制使用 large。</p>
+<p>Satellite 使用时间从计费账号包含的 <strong>orb usage</strong> 额度扣除（按 Satellite 的更高费率），用完后从 <strong>Amp credits</strong> 扣除，扣费逻辑与 orb 相同。这不是独立的 Satellite 套餐,而是统一计费体系的一部分。</p>
+<p>试点时,建议分开记录：</p>
+<ol>
+<li><strong>Satellite 启动次数与时长</strong>：在 Settings → Usage → Satellites 查看。</li>
+<li><strong>实际触发 Satellite 的任务类型</strong>：构建、测试、截图、GUI 验证，分别记录。</li>
+<li><strong>orb usage 消耗 vs. credits 消耗</strong>：前者在套餐内,后者是新增账单。</li>
+<li><strong>20 分钟保活是否有效复用</strong>：后续 follow-up 是否命中同一 Satellite，避免重复启动。</li>
+</ol>
+<p>不要用”每次构建固定多少钱”估算,因为保活复用、并发线程、构建时长都会影响最终费用。也不要假设有”免费 Satellite 额度”，除非官方明确公布具体数字；当前只说明从 orb usage 扣,没有独立免费层。</p>
+<h3 id="证据回传与验证"><a href="#证据回传与验证" class="headerlink" title="证据回传与验证"></a>证据回传与验证</h3><p>Satellite 的价值不仅在于”能构建”，还在于 Agent 能否提交可审查的证据：</p>
+<table>
+<thead>
+<tr>
+<th>验证维度</th>
+<th>要检查的证据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>构建成功</td>
+<td>构建日志、产物路径、是否有警告或失败</td>
+</tr>
+<tr>
+<td>模拟器运行</td>
+<td>截图、视频、控制台日志</td>
+</tr>
+<tr>
+<td>GUI 交互</td>
+<td>操作步骤、截图序列、预期 vs. 实际行为</td>
+</tr>
+<tr>
+<td>性能或崩溃</td>
+<td>Instruments 数据、crash log</td>
+</tr>
+</tbody></table>
+<p>Agent 应在任务完成后提交这些证据的链接或摘要,而不是只说”构建通过”。审阅者可在 Mac tab 回放或查看回传文件，确认 Agent 的判断是否基于完整信息。</p>
+<p>如果 Agent 声称”模拟器显示正常”，但没有提供截图；或者说”性能测试通过”，但没有给出 Instruments 报告，就应要求补充证据。这与普通 PR 审查的标准一致：声明需要证据支持。</p>
+<h2 id="试点建议：小范围任务、看证据、盯用量"><a href="#试点建议：小范围任务、看证据、盯用量" class="headerlink" title="试点建议：小范围任务、看证据、盯用量"></a>试点建议：小范围任务、看证据、盯用量</h2><p>下面是建议方案，不是已完成的实践。</p>
+<ol>
+<li><p><strong>加入 waitlist</strong>：在 Settings → Experimental Features 申请，每天 Move Me Up 可提前。记录申请时间与获批时间。</p>
+</li>
+<li><p><strong>选择一个有人负责审查的 iOS&#x2F;macOS 项目</strong>：不要在无人审查的情况下让 Agent 提交生产构建。</p>
+</li>
+<li><p><strong>从明确、可验证的任务开始</strong>：</p>
+<ul>
+<li>修复编译警告，提交构建日志。</li>
+<li>为已有功能补回归测试，提交模拟器截图。</li>
+<li>验证 UI 布局在不同设备尺寸下的表现，提交多张截图。</li>
+</ul>
+</li>
+<li><p><strong>每个任务保留一行记录</strong>：</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>记录内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>任务描述</td>
+<td>修复什么、验证什么</td>
+</tr>
+<tr>
+<td>Satellite 启动次数</td>
+<td>本任务触发几次 Mac</td>
+</tr>
+<tr>
+<td>总 Satellite 时长</td>
+<td>从 Settings → Usage → Satellites 读取</td>
+</tr>
+<tr>
+<td>保活复用情况</td>
+<td>后续 follow-up 是否命中同一 Satellite</td>
+</tr>
+<tr>
+<td>提交的证据</td>
+<td>构建日志、截图、视频链接</td>
+</tr>
+<tr>
+<td>人工审查结果</td>
+<td>直接接受、补充验证、拒绝，及原因</td>
+</tr>
+<tr>
+<td>新增费用</td>
+<td>orb usage 消耗 vs. credits 消耗</td>
+</tr>
+</tbody></table>
+<ol start="5">
+<li><p><strong>审查证据完整性</strong>：</p>
+<ul>
+<li>Agent 说”构建成功”时，检查日志是否有警告或跳过的测试。</li>
+<li>Agent 说”UI 正常”时，检查截图是否覆盖关键状态（加载中、错误、空数据）。</li>
+<li>Agent 说”性能测试通过”时，要求提供具体指标或 Instruments 报告。</li>
+</ul>
+</li>
+<li><p><strong>监控计费</strong>：在 Settings → Usage → Satellites 查看总用量；在账单页面确认 orb usage 余额与 credits 消耗。如果单个任务触发多次 Satellite 启动,分析是否因为保活窗口已过、任务拆分不当,或者 Agent 判断失误。</p>
+</li>
+<li><p><strong>触及预算或反复失败时暂停</strong>：如果 Satellite 用量超过试点预算,或者多次提交无效证据、改坏构建配置,就暂停新任务,先分析失败样本。在 Settings → Experimental Features 关闭 Satellites 可停止后续使用,已生成的产物仍应逐个审查。</p>
+</li>
+</ol>
+<p>只有当记录证明 Agent 能提交完整证据、减少人工构建与验证时间、计费在预算内,才值得扩大范围。不能因为”创建了 Satellite”或”提交了截图”就判定成功；成功口径应由独立审查与业务验证决定。</p>
+<h2 id="边界与未验证声明"><a href="#边界与未验证声明" class="headerlink" title="边界与未验证声明"></a>边界与未验证声明</h2><p>本文基于官方文档与公告,说明 Amp macOS Satellites 的架构、生命周期、计费与决策维度,目的是帮助 iOS&#x2F;macOS 项目负责人判断是否试点、如何记录与审查。</p>
+<p>以下内容<strong>未在本文中验证,不应视为已确认事实</strong>：</p>
+<ul>
+<li>未加入 waitlist,未启动真实 Satellite。</li>
+<li>未运行 iOS 构建、模拟器测试或 GUI 验证任务。</li>
+<li>未测量 Satellite 启动时延、构建成功率、证据完整性。</li>
+<li>未记录实际 orb usage 消耗、credits 账单、保活复用率。</li>
+<li>未对比”整台 Mac 运行 Agent”与”Linux + Satellite”的总成本。</li>
+<li>Quinn 的 35% 占比是公开估算,不是本团队实测或行业基准。</li>
+</ul>
+<p>如果官方文档、计费页面或镜像版本有更新,应以最新版本为准。试点前,再次确认 Settings → Experimental Features 的访问状态、Settings → Usage 的计费明细,以及项目 Settings → Satellites 的镜像配置。</p>
+<p>决策时,应基于团队的构建流程、验证标准和预算约束,而不是假设”Agent 需要 Mac”就等于”必须试点 Satellites”。如果团队已有可用的 macOS CI 环境、Agent 的主要工作在后端或 Web,或者试点预算不足以覆盖探索成本,推迟试点也是合理选择。</p>
+<p><em>核验说明：本文核对了 Amp 官方新闻、文档与公开讨论；架构与计费信息来自官方页面；试点方法属于作者建议。未实际加入 waitlist、未运行真实构建、未测量成功率或成本。发布前应再次确认文档与计费页面是否有变更。</em></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Amp/" rel="tag"># Amp</a>
+              <a href="/tags/macOS/" rel="tag"># macOS</a>
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+              <a href="/tags/Coding-Agent/" rel="tag"># Coding Agent</a>
+              <a href="/tags/%E4%BA%91%E7%AB%AF-Agent/" rel="tag"># 云端 Agent</a>
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/10/28/%E6%8A%8ACoding-Agent%E5%86%99%E6%88%90%E5%8F%AF%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E9%A1%B9%E7%9B%AE%EF%BC%9ACursor-Agent-SDK%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97/" rel="prev" title="Cursor-Agent-SDK：从可审查项目到只读PR原型">
+                  <i class="fa fa-angle-left"></i> Cursor-Agent-SDK：从可审查项目到只读PR原型
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/11/04/Cursor-Marketplace%E4%B8%8A%E7%9A%84Claude-Code%E6%89%A9%E5%B1%95%E6%8A%95%E6%AF%92%EF%BC%9A%E8%BE%B9%E7%95%8C%E3%80%81%E6%8E%92%E6%9F%A5%E4%B8%8E%E5%9B%A2%E9%98%9F%E7%AD%96%E7%95%A5/" rel="next" title="Cursor Marketplace 上的 Claude Code 扩展投毒：边界、排查与团队策略">
+                  Cursor Marketplace 上的 Claude Code 扩展投毒：边界、排查与团队策略 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"839e8a23fd37dc8610e5cec61fd5b590"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
