@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="依据 Shopify 2026 年 9 月至 11 月官方工程博客，拆清 Shop App 与 Shopify App 两次迁回原生的事实，说明 Agent 降低的是「写两遍」的成本，不是跨端决策本身；并给出技术负责人可执行的边界判断。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界">
+<meta property="og:url" content="https://devloong.com/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="依据 Shopify 2026 年 9 月至 11 月官方工程博客，拆清 Shop App 与 Shopify App 两次迁回原生的事实，说明 Agent 降低的是「写两遍」的成本，不是跨端决策本身；并给出技术负责人可执行的边界判断。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/shopify-native-agent-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/shopify-reflex-architecture.jpg">
+<meta property="og:image" content="https://devloong.com/images/shopify-cross-platform-decision.jpg">
+<meta property="article:published_time" content="2026-11-16T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-18T07:47:19.636Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Kotlin">
+<meta property="article:tag" content="React Native">
+<meta property="article:tag" content="Reflex">
+<meta property="article:tag" content="Shopify">
+<meta property="article:tag" content="Swift">
+<meta property="article:tag" content="技术负责人">
+<meta property="article:tag" content="跨端">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/shopify-native-agent-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/","path":"2026/11/16/Shopify用12周把App迁回原生：Agent时代，技术负责人该怎么定跨端边界/","title":"Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%85%E9%A1%BB%E5%85%88%E6%8B%86%E6%B8%85%E7%9A%84%E4%B8%A4%E4%BB%B6%E4%BA%8B%EF%BC%9AShop-App-%E2%89%A0-Shopify-App"><span class="nav-number">1.</span> <span class="nav-text">必须先拆清的两件事：Shop App ≠ Shopify App</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Shop-App%EF%BC%88%E4%B9%B0%E5%AE%B6%E8%B4%AD%E7%89%A9-App%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">Shop App（买家购物 App）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Shopify-App-Shopify-Mobile%EF%BC%88%E5%95%86%E6%88%B7%E7%AB%AF%EF%BC%8C%E6%9C%80%E5%A4%A7%E7%9A%84%E9%82%A3%E4%B8%AA%EF%BC%89"><span class="nav-number">1.2.</span> <span class="nav-text">Shopify App &#x2F; Shopify Mobile（商户端，最大的那个）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%88%90%E6%9C%AC%E5%81%87%E8%AE%BE%E5%A6%82%E4%BD%95%E8%A2%AB%E6%94%B9%E5%86%99%EF%BC%9A%E5%86%99%E4%B8%A4%E9%81%8D%E4%B8%8D%E5%86%8D%E7%AD%89%E4%BA%8E%E5%81%9A%E4%B8%A4%E5%80%8D%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">成本假设如何被改写：写两遍不再等于做两倍工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%EF%BC%9AGreenfield-%E9%87%8D%E5%BB%BA-%E3%80%8C%E7%8E%B0%E6%9C%89%E5%BA%94%E7%94%A8%E5%B0%B1%E6%98%AF%E6%9B%B4%E5%A5%BD%E7%9A%84%E8%A7%84%E6%A0%BC%E3%80%8D"><span class="nav-number">3.</span> <span class="nav-text">方法：Greenfield 重建 + 「现有应用就是更好的规格」</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reflex-%E6%9E%B6%E6%9E%84%EF%BC%9A%E5%85%B1%E4%BA%AB%E6%B5%8B%E8%AF%95%EF%BC%8C%E4%B8%8D%E5%85%B1%E4%BA%AB%E4%BB%A3%E7%A0%81"><span class="nav-number">4.</span> <span class="nav-text">Reflex 架构：共享测试，不共享代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Reflex-%E5%9B%9B%E6%A0%B9%E6%94%AF%E6%9F%B1%EF%BC%88%E5%BF%85%E9%A1%BB%E5%86%99%E5%AF%B9%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">Reflex 四根支柱（必须写对）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E5%88%87%E5%88%86"><span class="nav-number">4.2.</span> <span class="nav-text">模块切分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E5%BD%A2%E6%80%81"><span class="nav-number">4.3.</span> <span class="nav-text">测试形态</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%84%E7%BB%87%E4%B8%8E%E5%B7%A5%E4%BD%9C%E6%B5%81%EF%BC%9A%E4%B8%A4%E4%BA%BA%E4%B8%80%E7%BB%84%EF%BC%8C%E8%B7%A8%E7%AB%AF%E6%8B%A5%E6%9C%89%EF%BC%8CAgent-%E5%A4%9C%E9%97%B4%E7%BB%A7%E7%BB%AD"><span class="nav-number">5.</span> <span class="nav-text">组织与工作流：两人一组，跨端拥有，Agent 夜间继续</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%93%B6%E9%A2%88%E5%A6%82%E4%BD%95%E8%BF%81%E7%A7%BB%EF%BC%9A%E4%BB%8E%E5%AE%9E%E7%8E%B0%E5%88%B0%E5%AE%A1%E6%9F%A5%E3%80%81%E5%90%88%E5%B9%B6%E3%80%81%E5%8D%8F%E8%B0%83"><span class="nav-number">6.</span> <span class="nav-text">瓶颈如何迁移：从实现到审查、合并、协调</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Agent-%E6%98%AF%E7%AC%AC%E4%B8%80%E5%AE%A1"><span class="nav-number">6.1.</span> <span class="nav-text">Agent 是第一审</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%BA%E4%BB%8D%E6%98%AF%E6%9C%80%E5%90%8E%E5%86%B3%E7%AD%96%E8%80%85"><span class="nav-number">6.2.</span> <span class="nav-text">人仍是最后决策者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%93%B6%E9%A2%88%E4%BE%9D%E6%AC%A1%E6%98%AF%EF%BC%9A%E6%9C%BA%E5%99%A8%E3%80%81%E5%90%88%E5%B9%B6%E3%80%81%E5%8D%8F%E8%B0%83"><span class="nav-number">6.3.</span> <span class="nav-text">瓶颈依次是：机器、合并、协调</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E7%9A%84%E5%86%B3%E7%AD%96%E6%B8%85%E5%8D%95"><span class="nav-number">7.</span> <span class="nav-text">给技术负责人的决策清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E4%BD%A0%E8%A6%81%E4%BC%98%E5%8C%96%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">1. 你要优化的是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%9C%89%E6%B2%A1%E6%9C%89%E5%8F%AF%E4%BD%9C%E4%B8%BA-live-spec-%E7%9A%84%E5%AD%98%E9%87%8F%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">2. 有没有可作为 live spec 的存量实现？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%8D%E9%A6%88%E9%97%AD%E7%8E%AF%E8%83%BD%E4%B8%8D%E8%83%BD%E5%BF%AB%E5%88%B0%E5%8C%B9%E9%85%8D-Agent%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">3. 反馈闭环能不能快到匹配 Agent？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%AE%A1%E6%9F%A5%E5%AE%B9%E9%87%8F%E6%98%AF%E5%90%A6%E8%A2%AB%E5%BD%93%E6%88%90%E7%B3%BB%E7%BB%9F%E7%BA%A6%E6%9D%9F%EF%BC%9F"><span class="nav-number">7.4.</span> <span class="nav-text">4. 审查容量是否被当成系统约束？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8F%8C%E7%AB%AF%E4%B8%80%E8%87%B4%E6%80%A7%E9%9D%A0%E4%BB%80%E4%B9%88%E5%8D%A1%E4%BD%8F%EF%BC%9F"><span class="nav-number">7.5.</span> <span class="nav-text">5. 双端一致性靠什么卡住？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E5%B7%A5%E5%85%B7%E6%98%AF%E8%87%AA%E7%A0%94%E6%88%90%E6%9C%AC%E8%BF%98%E6%98%AF%E5%8F%AF%E5%A4%8D%E7%94%A8%E8%83%BD%E5%8A%9B%EF%BC%9F"><span class="nav-number">7.6.</span> <span class="nav-text">6. 工具是自研成本还是可复用能力？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E5%85%88%E5%81%9A%E5%B0%8F%E8%8C%83%E5%9B%B4%E5%8E%9F%E5%9E%8B%EF%BC%8C%E8%BF%98%E6%98%AF%E5%AE%A3%E5%B8%83%E5%85%A8%E9%87%8F%E8%BF%81%E6%A0%88%EF%BC%9F"><span class="nav-number">7.7.</span> <span class="nav-text">7. 先做小范围原型，还是宣布全量迁栈？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E9%80%82%E5%90%88%E7%9B%B4%E6%8E%A5%E7%85%A7%E6%90%AC%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">8.</span> <span class="nav-text">不适合直接照搬的情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E6%BA%90%E5%BA%93%E5%8E%BB%E5%90%91%EF%BC%88%E8%83%8C%E6%99%AF%E5%8F%82%E8%80%83%EF%BC%89"><span class="nav-number">9.</span> <span class="nav-text">开源库去向（背景参考）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界 | Loong's Blog">
+      <meta itemprop="description" content="依据 Shopify 2026 年 9 月至 11 月官方工程博客，拆清 Shop App 与 Shopify App 两次迁回原生的事实，说明 Agent 降低的是「写两遍」的成本，不是跨端决策本身；并给出技术负责人可执行的边界判断。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-16 10:00:00" itemprop="dateCreated datePublished" datetime="2026-11-16T10:00:00+08:00">2026-11-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-11-18 15:47:19" itemprop="dateModified" datetime="2026-11-18T15:47:19+08:00">2026-11-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">依据 Shopify 2026 年 9 月至 11 月官方工程博客，拆清 Shop App 与 Shopify App 两次迁回原生的事实，说明 Agent 降低的是「写两遍」的成本，不是跨端决策本身；并给出技术负责人可执行的边界判断。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 11 月 10 日，Shopify 宣布用 <strong>约 30 名工程师、12 周时间</strong>，把他们最大的商户端应用 Shopify App（也称 Shopify Mobile）从运行 New Architecture 的 React Native，完整重建为原生的 Swift 与 Kotlin。用户无感切换，保持登录，偏好保留，从用户视角只是一次更新后继续能用。<a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">How we rebuilt the Shopify app in 12 weeks</a></p>
+<p>对技术负责人来说，真正该停下来看的不是「某个模型突然能独立写完原生 App」，而是成本公式的改写：<strong>Agent 改变的是『写两遍 &#x3D; 做两倍工作』的假设</strong>，而『为各平台而构建』的优势还在。这件事最大的决策价值不是「跨端已死」，而是架构边界的判断条件变了——需要重新算账，而不是情绪化站队。</p>
+<p><strong>核验说明：</strong> 本文依据 Shopify 2026 年 9 月至 11 月官方工程博客整理（<a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">back-to-native</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/shop-app-migration">Shop 迁移</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/helix">Helix</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/reflex">Reflex</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">重建文</a>），是官方资料解读与决策建议，<strong>不是</strong>本团队迁移实践，也没有第一手基准测试。</p>
+<p><img src="/images/shopify-native-agent-hero.jpg" alt="Shopify 回归原生概念图：Agent 时代的跨端决策"></p>
+<p><em>概念图：Agent 改变的是实现成本，决策仍要落在架构、反馈、审查与平台能力。</em></p>
+<span id="more"></span>
+
+<h2 id="必须先拆清的两件事：Shop-App-≠-Shopify-App"><a href="#必须先拆清的两件事：Shop-App-≠-Shopify-App" class="headerlink" title="必须先拆清的两件事：Shop App ≠ Shopify App"></a>必须先拆清的两件事：Shop App ≠ Shopify App</h2><p>这是两个应用、两次「12 周」，指标不能混用。技术讨论里很多争论来自这里没拆清。</p>
+<h3 id="Shop-App（买家购物-App）"><a href="#Shop-App（买家购物-App）" class="headerlink" title="Shop App（买家购物 App）"></a>Shop App（买家购物 App）</h3><p>2026 年 9 月 10 日，Shopify <a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">宣布回归原生</a> 的同时，公布 Shop App 的迁移已经完成：在 AI 辅助下，从 proof of concept 到完整重建并上架，用了 12 周。</p>
+<p><strong>Shop App 官方指标</strong>（来源：<a target="_blank" rel="noopener" href="https://shopify.engineering/shop-app-migration">Shop 迁移文</a>）：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>React Native</th>
+<th>原生</th>
+<th>改善</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iOS 启动时间</td>
+<td>3200 ms</td>
+<td>2466 ms</td>
+<td>减少 23%</td>
+</tr>
+<tr>
+<td>Android 启动时间</td>
+<td>4433 ms</td>
+<td>2233 ms</td>
+<td>减少 50%</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>历史约 99.5%+</td>
+<td>会话稳定性 99.95%+</td>
+<td>崩溃会话减少约 10 倍</td>
+</tr>
+</tbody></table>
+<h3 id="Shopify-App-Shopify-Mobile（商户端，最大的那个）"><a href="#Shopify-App-Shopify-Mobile（商户端，最大的那个）" class="headerlink" title="Shopify App &#x2F; Shopify Mobile（商户端，最大的那个）"></a>Shopify App &#x2F; Shopify Mobile（商户端，最大的那个）</h3><p>2026 年 11 月 10 日宣布：约 30 名工程师，把 Shopify App（300+ 屏幕，home &amp; lockscreen widgets、Apple Watch app、complications、Siri Shortcuts）从运行 New Architecture 的 React Native，重建为完全原生，也用了 12 周。</p>
+<p><strong>Shopify Mobile 官方指标</strong>（来源：<a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">重建文</a>）：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>React Native</th>
+<th>原生</th>
+<th>改善</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Android P50 启动</td>
+<td>1.71s</td>
+<td>0.87s</td>
+<td>约 50%</td>
+</tr>
+<tr>
+<td>iOS P50 启动</td>
+<td>0.70s</td>
+<td>0.60s</td>
+<td>约 14%</td>
+</tr>
+<tr>
+<td>Android 包体</td>
+<td>80.4MB</td>
+<td>47.6MB</td>
+<td>小了 40%</td>
+</tr>
+<tr>
+<td>Android P50 内存</td>
+<td>470MB</td>
+<td>200MB</td>
+<td>约一半</td>
+</tr>
+<tr>
+<td>iOS P50 峰值内存</td>
+<td>730MB</td>
+<td>190MB</td>
+<td>降幅超 70%</td>
+</tr>
+<tr>
+<td>Android crash-free sessions</td>
+<td>99.66%</td>
+<td>99.98%</td>
+<td>稳定性提升</td>
+</tr>
+<tr>
+<td>iOS crash-free sessions</td>
+<td>保持在 99.95% 目标之上</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>官方还强调：能在能力到来时直接支持平台特性，例如 iPhone Duo 当天支持；增加了 self-healing 能力，agents 可检测并自动修复崩溃（见后文）。</p>
+<p><strong>这两组数字只能对号入座，不要写成「Shopify 全系」。</strong> 讨论 Shopify Mobile 的时候引用 Shop App 的启动时间，或者反过来，都是事实分层错误。</p>
+<h2 id="成本假设如何被改写：写两遍不再等于做两倍工作"><a href="#成本假设如何被改写：写两遍不再等于做两倍工作" class="headerlink" title="成本假设如何被改写：写两遍不再等于做两倍工作"></a>成本假设如何被改写：写两遍不再等于做两倍工作</h2><p>Shopify 自己写得很清楚：React Native 在 2020 年的选择是成功的；他们不是因为 RN 突然变慢或不能用才走的。<a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">back-to-native</a> 原文明确说：</p>
+<blockquote>
+<p>React Native apps can be fast. Ours are.</p>
+</blockquote>
+<p>变更原因是 <strong>agents 降低了「共享实现」的优势，而「为各平台而构建」的优势还在</strong>。</p>
+<p>官方承认：</p>
+<blockquote>
+<p>Native still means building and maintaining software on two platforms, that cost has not disappeared.</p>
+</blockquote>
+<p><strong>变的是 agents 能承担足够多的实现、翻译、测试和审查</strong>，使它不再像 2020 年那样是决定性因素。</p>
+<p>因此技术负责人不能把这篇新闻读成「跨端已死，立刻全面回原生」。这是 Shopify 在自身体量、存量 RN 参考实现、自研 Helix&#x2F;Reflex&#x2F;远程开发环境、以及审查能力重组之后的选择。</p>
+<p>他们明确反对 vibe coding &#x2F; 一次性让 LLM 对着 RN 仓库 one-shot 出可上架代码。<a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">back-to-native</a> 说：</p>
+<blockquote>
+<p>即使用规格、task files 再实现，仍会得到大量无法维护、无法上架的代码。</p>
+</blockquote>
+<p>真正的方法是什么？</p>
+<h2 id="方法：Greenfield-重建-「现有应用就是更好的规格」"><a href="#方法：Greenfield-重建-「现有应用就是更好的规格」" class="headerlink" title="方法：Greenfield 重建 + 「现有应用就是更好的规格」"></a>方法：Greenfield 重建 + 「现有应用就是更好的规格」</h2><p>Shopify 选的是 <strong>greenfield 重建</strong>，而不是 brownfield 渐迁。理由（<a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">官方</a>）：</p>
+<ul>
+<li>LLM 善于以 RN 版为参考用 Swift&#x2F;Kotlin 实现</li>
+<li>干净重建没有旧约束</li>
+<li>原型显示能比没有 coding agents 时快得多</li>
+</ul>
+<p>过去迁到 RN 时他们曾对部分大应用采用 brownfield，因为重写要数年且会打断发版。这次不同。</p>
+<p><a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">重建文</a> 写道：</p>
+<blockquote>
+<p>先写规格再交给 agent 不成功，规格很快过时。</p>
+</blockquote>
+<p>Helix（Shopify 自研工具）读取存量 RN 屏幕作为 <strong>live reference</strong>，切成可在数分钟内审查的小 checkpoint。每个 checkpoint 必须：</p>
+<ol>
+<li>用测试证明行为</li>
+<li>通过与参考应用的视觉对比</li>
+<li>经受两次 adversarial code review</li>
+<li>得到人的点头</li>
+</ol>
+<p>才能提交并开始下一个。审查反馈会被记住。</p>
+<p><strong>新功能没有旧屏可对照时怎么办？</strong> 官方承认这是 <strong>next challenge</strong>。文中不要把「迁移方法论」直接推销成「日常新功能开发已经完全可复制」。</p>
+<h2 id="Reflex-架构：共享测试，不共享代码"><a href="#Reflex-架构：共享测试，不共享代码" class="headerlink" title="Reflex 架构：共享测试，不共享代码"></a>Reflex 架构：共享测试，不共享代码</h2><p>Shopify 在 <a target="_blank" rel="noopener" href="https://shopify.engineering/reflex">Reflex</a> 一文中给出的原则是：</p>
+<blockquote>
+<p>Share the test, not the code.</p>
+</blockquote>
+<p><strong>代码写两遍，测试写一遍。</strong> 没有跨端共享代码层。Swift on iOS，Kotlin on Android，各自 UI toolkit 与并发模型，中间没有 cross-platform layer。</p>
+<p>官方判断：<strong>在 agents 写大部分代码时，写第二份原生实现比维护一层桥更便宜。</strong></p>
+<p><img src="/images/shopify-reflex-architecture.jpg" alt="Reflex 架构四支柱与 Shared Tests"></p>
+<p><em>Reflex 架构：Core、ViewModel、Introspection、CLI 四根支柱支撑双端共享测试，而不是共享代码。</em></p>
+<h3 id="Reflex-四根支柱（必须写对）"><a href="#Reflex-四根支柱（必须写对）" class="headerlink" title="Reflex 四根支柱（必须写对）"></a>Reflex 四根支柱（必须写对）</h3><ol>
+<li><strong>无 UI 的 Core 模块</strong>：除视图外的一切，无 UI import、无设备依赖，可在 macOS 或 JVM 无头运行。</li>
+<li><strong>严格的 ViewModel 契约</strong>：Elm 风格，actions in, state out，状态只在一处改变（update）。</li>
+<li><strong>ViewModel introspection</strong>：JSON 契约（name、state、可接受的 actions），让外部进程（CLI）读写屏幕。</li>
+<li><strong>平台无关 CLI</strong>：对上述契约发命令，不必启动模拟器&#x2F;真机。<code>ls</code> 打印当前屏幕名、state JSON、可执行 actions；<code>do Action [json]</code> 触发一个 action。CLI 可以对无头 core 或真实构建，但只和 ViewModel 说话，从不操作渲染后的 UI。</li>
+</ol>
+<h3 id="模块切分"><a href="#模块切分" class="headerlink" title="模块切分"></a>模块切分</h3><ul>
+<li><strong>Core</strong>：ViewModels、services、navigation state、GraphQL、持久化逻辑、deep links。iOS 是 plain Swift package，Android 是 plain JVM module；无 UIKit、无 android.*</li>
+<li><strong>Mobile</strong>：SwiftUI&#x2F;Compose、Keychain、push、camera、share sheet。依赖 Core，Core 不知 Mobile。</li>
+<li><strong>CLI</strong>：同样依赖 Core，跑在 macOS 或 JVM。</li>
+</ul>
+<p>Core 用构造函数注入平台能力，不用 DI 框架。Introspection Kit 是独立模块；删掉 introspection 文件应用仍能编译运行，只是失去终端驱动能力。</p>
+<h3 id="测试形态"><a href="#测试形态" class="headerlink" title="测试形态"></a>测试形态</h3><p>官方称更像 <strong>trophy</strong>、中间层很宽。<strong>1,700+ behavior tests 在 CI 上双端大约四分钟跑完</strong>。无网络，强制 fixture；一次 journey 可能带十几个 GraphQL 响应。</p>
+<p>测试 SDK 写在 Bun test runner 上，<strong>同一测试文件跑 iOS 与 Android</strong>。热身后无设备用例大约几百毫秒；同一测试在 iOS 模拟器大约两秒。</p>
+<p>UI 验证另走 Helix checkpoint 的视觉审查，以及少量截图测试。</p>
+<p><strong>官方没有把 Reflex 开源</strong>；原文说 “This article is the open source.”。不要写「可直接引入 Shopify Reflex 库」或捏造包名。</p>
+<h2 id="组织与工作流：两人一组，跨端拥有，Agent-夜间继续"><a href="#组织与工作流：两人一组，跨端拥有，Agent-夜间继续" class="headerlink" title="组织与工作流：两人一组，跨端拥有，Agent 夜间继续"></a>组织与工作流：两人一组，跨端拥有，Agent 夜间继续</h2><p><a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">重建文</a> 描述的组织方式：</p>
+<ul>
+<li>约 30 人，<strong>两人一组的 pod</strong>，每组跨 iOS&#x2F;Android 拥有一块产品区域</li>
+<li>两人白天结对，每人同时 steer 多个 agent</li>
+<li>Agent 夜间和周末继续工作，早上面对待审 PR 队列</li>
+<li>不是「一个 iOS 团队 + 一个 Android 团队」</li>
+<li><strong>一个 PR 包含双端改动</strong>。CI 会在 iOS 与 Android 以架构不允许的方式分叉时失败</li>
+</ul>
+<h2 id="瓶颈如何迁移：从实现到审查、合并、协调"><a href="#瓶颈如何迁移：从实现到审查、合并、协调" class="headerlink" title="瓶颈如何迁移：从实现到审查、合并、协调"></a>瓶颈如何迁移：从实现到审查、合并、协调</h2><h3 id="Agent-是第一审"><a href="#Agent-是第一审" class="headerlink" title="Agent 是第一审"></a>Agent 是第一审</h3><p>每个 PR 先对照架构指南做 <strong>adversarial review</strong>，再进人审。</p>
+<h3 id="人仍是最后决策者"><a href="#人仍是最后决策者" class="headerlink" title="人仍是最后决策者"></a>人仍是最后决策者</h3><p>审的是意图、架构契合、产品行为、以及是否属于数百万用户依赖的代码库。</p>
+<p>人无法逐行审 100 倍代码；工作被切成小 checkpoint，<strong>diff 大小是给 agent 的约束</strong>。</p>
+<p>每天结束，agent 把当天审查意见写回 skills 和 Architecture.md。</p>
+<h3 id="瓶颈依次是：机器、合并、协调"><a href="#瓶颈依次是：机器、合并、协调" class="headerlink" title="瓶颈依次是：机器、合并、协调"></a>瓶颈依次是：机器、合并、协调</h3><ul>
+<li><strong>机器成为瓶颈</strong>，所以做了 remote development environment。</li>
+<li><strong>合并成为瓶颈</strong>：agents 负责 rebase、冲突、CI、flaky tests。</li>
+<li><strong>协调成为瓶颈</strong>：crash 自愈循环每 15 分钟查找新崩溃；Slack agent River 在远程开发环境复现并开修复 PR。<strong>人第一次知道崩溃，可能是 PR 来了。</strong> 所有权按产品区域归属 pod，减少重复开工。</li>
+</ul>
+<p>这不是「无人值守自动上架」，而是工程系统的<strong>瓶颈持续迁移</strong>。</p>
+<h2 id="给技术负责人的决策清单"><a href="#给技术负责人的决策清单" class="headerlink" title="给技术负责人的决策清单"></a>给技术负责人的决策清单</h2><p>不要先问「要不要学 Shopify 回原生」，而应先问下面几件事：</p>
+<p><img src="/images/shopify-cross-platform-decision.jpg" alt="跨端决策门槛：写两遍成本、反馈闭环、审查容量"></p>
+<p><em>决策门槛：Agent 改写的是第一项，后两项仍是系统约束。</em></p>
+<h3 id="1-你要优化的是什么？"><a href="#1-你要优化的是什么？" class="headerlink" title="1. 你要优化的是什么？"></a>1. 你要优化的是什么？</h3><p>性能&#x2F;平台能力，还是「只写一份实现」的人力成本？两者被 Agent 改写的程度不同。</p>
+<h3 id="2-有没有可作为-live-spec-的存量实现？"><a href="#2-有没有可作为-live-spec-的存量实现？" class="headerlink" title="2. 有没有可作为 live spec 的存量实现？"></a>2. 有没有可作为 live spec 的存量实现？</h3><p>没有参考屏时，Shopify 自己也说这是下一步难题。</p>
+<h3 id="3-反馈闭环能不能快到匹配-Agent？"><a href="#3-反馈闭环能不能快到匹配-Agent？" class="headerlink" title="3. 反馈闭环能不能快到匹配 Agent？"></a>3. 反馈闭环能不能快到匹配 Agent？</h3><p>如果验证还依赖模拟器截图&#x2F;无障碍树，官方的经验是迭代会慢到以分钟计。没有无头 core + 契约化 ViewModel + 可执行检查，只把模型换成更强的，解决不了这个瓶颈。</p>
+<h3 id="4-审查容量是否被当成系统约束？"><a href="#4-审查容量是否被当成系统约束？" class="headerlink" title="4. 审查容量是否被当成系统约束？"></a>4. 审查容量是否被当成系统约束？</h3><p>写得更快而人审跟不上，只是把等待从实现挪到集成。</p>
+<h3 id="5-双端一致性靠什么卡住？"><a href="#5-双端一致性靠什么卡住？" class="headerlink" title="5. 双端一致性靠什么卡住？"></a>5. 双端一致性靠什么卡住？</h3><p>共享代码、共享测试、还是流程约定？Shopify 选的是「共享测试 + 同构架构 + CI 分叉即失败」，这需要你愿意牺牲一部分平台惯用写法。</p>
+<h3 id="6-工具是自研成本还是可复用能力？"><a href="#6-工具是自研成本还是可复用能力？" class="headerlink" title="6. 工具是自研成本还是可复用能力？"></a>6. 工具是自研成本还是可复用能力？</h3><p>Helix、Reflex、远程开发环境都是 Shopify 内部系统；公开的是方法，不是可安装的产品。不要承诺「下周就能上同一套工具」。</p>
+<h3 id="7-先做小范围原型，还是宣布全量迁栈？"><a href="#7-先做小范围原型，还是宣布全量迁栈？" class="headerlink" title="7. 先做小范围原型，还是宣布全量迁栈？"></a>7. 先做小范围原型，还是宣布全量迁栈？</h3><p>Shopify 自己也是先用 LLM 在最大应用的核心部分做原型，再决定 greenfield。</p>
+<h2 id="不适合直接照搬的情况"><a href="#不适合直接照搬的情况" class="headerlink" title="不适合直接照搬的情况"></a>不适合直接照搬的情况</h2><ul>
+<li>小团队没有审查容量</li>
+<li>没有可对照的存量应用</li>
+<li>产品强依赖一套跨端设计系统且平台差异不是瓶颈</li>
+<li>无法把业务逻辑从 UI&#x2F;设备依赖中拆出</li>
+</ul>
+<p><strong>不要贬低 Flutter &#x2F; React Native &#x2F; KMP</strong>；它们仍然成立，只是成本公式变了，需要重新算，而不是情绪化站队。</p>
+<h2 id="开源库去向（背景参考）"><a href="#开源库去向（背景参考）" class="headerlink" title="开源库去向（背景参考）"></a>开源库去向（背景参考）</h2><p><a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">back-to-native</a> 公布了 Shopify 自己库的安排：</p>
+<ul>
+<li><strong>React Native Skia</strong>：Shopify 赞助到 2026 年底，William Candillon 之后继续，将 fork 并以新名发布，原仓库完成过渡后归档。</li>
+<li><strong>FlashList</strong>：约每周 200 万次下载；Shopify 继续修破坏兼容性的关键问题，并与若干公司讨论长期托管。</li>
+<li><strong>Restyle</strong>：将归档，维护到 2026 年底后停止。</li>
+</ul>
+<p>这些是 Shopify 自己库的安排，<strong>不要写成「整个 RN 生态停更」</strong>。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>Shopify 用 12 周把 Shopify App 迁回原生，展示的不是「跨端已死」，而是 <strong>Agent 改变了成本公式的一项——『写两遍』的成本</strong>。另外几项——反馈闭环、审查容量、平台能力差异、存量参考实现——仍然是决策的输入。</p>
+<p>技术负责人的判断应落在：<strong>架构是否可执行、反馈是否够快、审查是否跟得上</strong>，而不是「要不要放弃跨端」。这是工程架构、工作流与验证体系的变化，不是某个模型突然能独立写完原生 App 并自动上架。</p>
+<p>Shopify 公开的是方法，不是可安装的产品。复制之前，先算清自己的账。</p>
+<hr>
+<p><strong>核验说明：</strong> 本文主要依据 Shopify 官方工程博客（<a target="_blank" rel="noopener" href="https://shopify.engineering/back-to-native">back-to-native</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/shop-app-migration">Shop 迁移</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/helix">Helix</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/reflex">Reflex</a>、<a target="_blank" rel="noopener" href="https://shopify.engineering/shopify-app-rebuild">重建文</a>）整理；<strong>未运行 Shopify 内部工具，未对本团队应用做实测</strong>。发布前请以官方博客最新版为准。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/Shopify/" rel="tag"># Shopify</a>
+              <a href="/tags/React-Native/" rel="tag"># React Native</a>
+              <a href="/tags/Swift/" rel="tag"># Swift</a>
+              <a href="/tags/Kotlin/" rel="tag"># Kotlin</a>
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/Reflex/" rel="tag"># Reflex</a>
+              <a href="/tags/%E8%B7%A8%E7%AB%AF/" rel="tag"># 跨端</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/13/Cursor%20Projects%20%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81%E5%A4%9A%E4%BA%BA%E5%8D%8F%E4%BD%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%85%B1%E4%BA%AB%E8%BE%B9%E7%95%8C/" rel="prev" title="Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界">
+                  <i class="fa fa-angle-left"></i> Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/11/18/A2UI%201.0%E6%9D%A5%E4%BA%86%EF%BC%9A%E7%94%9F%E6%88%90%E5%BC%8FUI%E8%BF%9B%E7%94%9F%E4%BA%A7%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BE%B9%E7%95%8C/" rel="next" title="A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界">
+                  A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"182ae1fa2df45f601a626995bf92e251"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

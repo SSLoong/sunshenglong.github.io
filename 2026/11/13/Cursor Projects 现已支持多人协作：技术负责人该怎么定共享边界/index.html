@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="基于 2026-11-10 Cursor 官方博客与现行文档，给技术负责人的决策指南：什么时候该把团队放进一个共享 Project，共享的是任务看板与团队上下文而不是个人 store，计费按何人跑，以及 agent-to-agent 通讯的安全边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界">
+<meta property="og:url" content="https://devloong.com/2026/11/13/Cursor%20Projects%20%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81%E5%A4%9A%E4%BA%BA%E5%8D%8F%E4%BD%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%85%B1%E4%BA%AB%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="基于 2026-11-10 Cursor 官方博客与现行文档，给技术负责人的决策指南：什么时候该把团队放进一个共享 Project，共享的是任务看板与团队上下文而不是个人 store，计费按何人跑，以及 agent-to-agent 通讯的安全边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/cursor-projects-multiplayer-hero_7caf.jpg">
+<meta property="og:image" content="https://devloong.com/images/cursor-projects-shared-context_5bb1.jpg">
+<meta property="og:image" content="https://devloong.com/images/cursor-projects-decision_1604.jpg">
+<meta property="article:published_time" content="2026-11-13T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-18T07:47:19.635Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Cloud Agents">
+<meta property="article:tag" content="Cursor">
+<meta property="article:tag" content="Projects">
+<meta property="article:tag" content="团队协作">
+<meta property="article:tag" content="技术负责人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/cursor-projects-multiplayer-hero_7caf.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/13/Cursor%20Projects%20%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81%E5%A4%9A%E4%BA%BA%E5%8D%8F%E4%BD%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%85%B1%E4%BA%AB%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/13/Cursor%20Projects%20%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81%E5%A4%9A%E4%BA%BA%E5%8D%8F%E4%BD%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%85%B1%E4%BA%AB%E8%BE%B9%E7%95%8C/","path":"2026/11/13/Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界/","title":"Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E6%8A%8A%E8%83%BD%E7%94%A8%E7%9A%84%E7%A1%AC%E9%97%A8%E6%A7%9B%E9%92%89%E6%AD%BB"><span class="nav-number">1.</span> <span class="nav-text">先把能用的硬门槛钉死</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E4%BA%86%E4%BB%80%E4%B9%88%E3%80%81%E6%B2%A1%E5%85%B1%E4%BA%AB%E4%BB%80%E4%B9%88%EF%BC%9A%E4%B8%A4%E5%A5%97-store"><span class="nav-number">2.</span> <span class="nav-text">共享了什么、没共享什么：两套 store</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Agent-to-agent-%E9%80%9A%E8%AE%AF%E7%9A%84%E7%9C%9F%E5%AE%9E%E8%BE%B9%E7%95%8C"><span class="nav-number">3.</span> <span class="nav-text">Agent-to-agent 通讯的真实边界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A1%E8%B4%B9%E6%80%8E%E4%B9%88%E7%AE%97%EF%BC%9A%E6%8C%89%E4%BD%95%E4%BA%BA%E8%B7%91"><span class="nav-number">4.</span> <span class="nav-text">计费怎么算：按何人跑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E5%86%B3%E7%AD%96%E6%B8%85%E5%8D%95%EF%BC%9A%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E5%BC%80%E5%85%B1%E4%BA%AB-Project"><span class="nav-number">5.</span> <span class="nav-text">技术负责人决策清单：什么时候该开共享 Project</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Prerequisites%EF%BC%88%E5%89%8D%E6%8F%90%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">Prerequisites（前提）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Decide-first%EF%BC%88%E5%85%88%E5%86%B3%E7%AD%96%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">Decide first（先决策）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Who-owns-the-context%EF%BC%88%E8%B0%81%E6%8B%A5%E6%9C%89%E4%B8%8A%E4%B8%8B%E6%96%87%EF%BC%89"><span class="nav-number">5.2.1.</span> <span class="nav-text">1. Who owns the context（谁拥有上下文）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Billing-runs-as-each-person%EF%BC%88%E8%AE%A1%E8%B4%B9%E6%8C%89%E5%90%84%E4%BA%BA%E8%B7%91%EF%BC%89"><span class="nav-number">5.2.2.</span> <span class="nav-text">2. Billing runs as each person（计费按各人跑）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-What-stays-in-personal-store%EF%BC%88%E4%BB%80%E4%B9%88%E7%95%99%E5%9C%A8%E4%B8%AA%E4%BA%BA-store%EF%BC%89"><span class="nav-number">5.2.3.</span> <span class="nav-text">3. What stays in personal store（什么留在个人 store）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-Who-may-invite%EF%BC%88%E8%B0%81%E5%8F%AF%E4%BB%A5%E9%82%80%E8%AF%B7%EF%BC%89"><span class="nav-number">5.2.4.</span> <span class="nav-text">4. Who may invite（谁可以邀请）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E5%86%B3%E7%AD%96%E6%B5%81%E7%A8%8B%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.3.</span> <span class="nav-text">一个决策流程示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%92%8C%E8%BF%91%E6%9C%9F%E7%83%AD%E7%82%B9%E6%80%8E%E4%B9%88%E9%94%99%E5%BC%80%E7%9C%8B"><span class="nav-number">6.</span> <span class="nav-text">和近期热点怎么错开看</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/13/Cursor%20Projects%20%E7%8E%B0%E5%B7%B2%E6%94%AF%E6%8C%81%E5%A4%9A%E4%BA%BA%E5%8D%8F%E4%BD%9C%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%85%B1%E4%BA%AB%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界 | Loong's Blog">
+      <meta itemprop="description" content="基于 2026-11-10 Cursor 官方博客与现行文档，给技术负责人的决策指南：什么时候该把团队放进一个共享 Project，共享的是任务看板与团队上下文而不是个人 store，计费按何人跑，以及 agent-to-agent 通讯的安全边界。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-13 10:00:00" itemprop="dateCreated datePublished" datetime="2026-11-13T10:00:00+08:00">2026-11-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-11-18 15:47:19" itemprop="dateModified" datetime="2026-11-18T15:47:19+08:00">2026-11-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">基于 2026-11-10 Cursor 官方博客与现行文档，给技术负责人的决策指南：什么时候该把团队放进一个共享 Project，共享的是任务看板与团队上下文而不是个人 store，计费按何人跑，以及 agent-to-agent 通讯的安全边界。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 11 月 10 日，Cursor 官方宣布：Projects 现已支持多人协作（multiplayer），beta 向所有 Cursor 用户推出。<a target="_blank" rel="noopener" href="https://cursor.com/blog/projects-multiplayer">官方博客</a></p>
+<p>对技术负责人来说，这个变化的决策意义在于：<strong>从单人多 Agent 到团队共享工作区</strong>。不是简单地”多几个人用 Agent”，而是同一个 Project 里，每个人都有自己的 coordinator 会话和 workers，同时共享任务看板与团队上下文层。官方举例的场景包括 on-call 交接、设计师与工程师重叠的工作、以及跨多 PR 的特性开发。</p>
+<p>本文依据截至 <strong>2026-11-13</strong> 的 <a target="_blank" rel="noopener" href="https://cursor.com/docs/agent/projects">Cursor Projects 文档</a>、<a target="_blank" rel="noopener" href="https://cursor.com/help/ai-features/projects">帮助页面</a> 与官方博客整理，<strong>非本机完整实测</strong>。重点是把能用的硬门槛、共享边界、计费规则与决策清单钉死，而不是重复产品说明书。</p>
+<p><img src="/images/cursor-projects-multiplayer-hero_7caf.jpg" alt="封面：多人围着共享任务板与上下文层协作"></p>
+<p><em>概念配图：团队成员各自拥有 coordinator 会话，共享一套任务看板与团队上下文，同时保留个人 store。</em></p>
+<span id="more"></span>
+
+<h2 id="先把能用的硬门槛钉死"><a href="#先把能用的硬门槛钉死" class="headerlink" title="先把能用的硬门槛钉死"></a>先把能用的硬门槛钉死</h2><p>不是所有用户都能直接开启分享。文档与博客同时存在的要求必须分层说清楚：</p>
+<table>
+<thead>
+<tr>
+<th>门槛维度</th>
+<th>要求</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>套餐</td>
+<td>Projects 需要<strong>包含 Cloud Agents 的套餐</strong>：Premium and higher、Teams、Enterprise，以及 legacy paid plans</td>
+<td><a target="_blank" rel="noopener" href="https://cursor.com/help/ai-features/cloud-agents">Cloud Agents 帮助页</a></td>
+</tr>
+<tr>
+<td>不可用套餐</td>
+<td>Free、Plus、legacy Hobby（这些不含 Cloud Agents）</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>团队账号</td>
+<td>分享 Project 需要 <strong>team account</strong></td>
+<td><a target="_blank" rel="noopener" href="https://cursor.com/docs/agent/projects">Projects 文档</a></td>
+</tr>
+<tr>
+<td>客户端版本</td>
+<td>分享需要 <strong>Cursor 3.26.13 or later</strong></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>Enterprise 版本要求</td>
+<td>Enterprise teams 使用 Projects 本身需要 <strong>3.21.9+</strong>；分享另需 <strong>3.26.13+</strong></td>
+<td>同上</td>
+</tr>
+<tr>
+<td>仓库访问权限</td>
+<td>队友需要有该 Project <strong>仓库的访问权限</strong>才能加入</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>明确排除</td>
+<td><strong>Privacy Mode (Legacy)</strong>、跑在 <strong>self-hosted machine</strong> 上的 Project、已 <strong>archived</strong> 的 Project</td>
+<td>同上</td>
+</tr>
+</tbody></table>
+<p>注意分层理解：官方博客写 beta 向所有用户推出，指的是功能在推出；但文档同时要求套餐包含 Cloud Agents、team account、客户端版本与仓库权限。<strong>不要把「beta 推出」写成「所有套餐都能分享」</strong>。</p>
+<p>另外，当前 Privacy Mode（非 Legacy）下，Cloud Agents <strong>可以使用</strong>（官方明确：”Does Privacy Mode work with Cloud Agents? Yes.”）。只有 <strong>Privacy Mode (Legacy)</strong> 被明确排除。不要混为一谈。</p>
+<p>个人账号或另一个 team 的人不能加入。邀请通过 Project 顶部 Invite 发起，搜索姓名或邮箱；队友点击 Accept Invite 后获得自己在该 Project 的聊天。owner 和任何已加入的人都可以邀请队友；也可通过 Copy link 分享 Project 链接，但只有已在 Project 里的人能复制链接。owner 可用 Reset Share Link 让先前的拷贝失效。</p>
+<h2 id="共享了什么、没共享什么：两套-store"><a href="#共享了什么、没共享什么：两套-store" class="headerlink" title="共享了什么、没共享什么：两套 store"></a>共享了什么、没共享什么：两套 store</h2><p>这是理解决策边界的第一个关键。每位加入者在该 Project 里拥有<strong>自己的聊天</strong>、<strong>自己的 coordinator 和 workers</strong>。<strong>对方的会话以其本人身份运行并计费</strong>（Their chat runs and bills as them）。</p>
+<p>成员之间共享两块：</p>
+<ol>
+<li><strong>Task board</strong>：所有人使用同一份任务列表&#x2F;看板。</li>
+<li><strong>Shared context（Project store）</strong>：应用里显示为 Context，路径是 <code>/cursor/stores/self</code>，是一个所有成员的 agents 都会读写的 Agent Store。</li>
+</ol>
+<p>同时，每个人还有一套 <strong>Personal user store</strong>，路径是 <code>/cursor/stores/user</code>，<strong>队友的 agents 永远看不到你的个人 store</strong>。</p>
+<p><img src="/images/cursor-projects-shared-context_5bb1.jpg" alt="架构：共享 vs 个人上下文"></p>
+<p><em>示意：Teammate A 和 B 各有自己的 chat、coordinator、worker 和 personal store；中间共享 task board 与 Project store；agent-to-agent 消息标记为 untrusted。</em></p>
+<table>
+<thead>
+<tr>
+<th>Store</th>
+<th>路径</th>
+<th>谁读写</th>
+<th>放什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Project store (Context)</td>
+<td><code>/cursor/stores/self</code></td>
+<td>每位成员的 agents</td>
+<td>需求文档、图、技术规格、mockups、团队决策、共享上下文</td>
+</tr>
+<tr>
+<td>Personal user store</td>
+<td><code>/cursor/stores/user</code></td>
+<td>仅你自己的 agents</td>
+<td>Preferences 和 skills，会跟着你在不同 Project 之间走，但不会到达队友</td>
+</tr>
+</tbody></table>
+<p>官方强调：个人 store 放 preferences 和 skills，会跟着你在不同 Project 之间走，但不会到达队友。队友加入时，你的 coordinator 可以提议把描述「如何在本 Project 工作」的 preference 条目拷进 Project rules；<strong>只拷贝你批准的内容</strong>。</p>
+<p>这意味着：<strong>共享 Project 不等于把个人偏好、技能或历史全部暴露给队友</strong>。技术负责人需要在 Project 设置初期，主动决定哪些上下文应该进入 Project store，哪些应该留在个人 store。</p>
+<h2 id="Agent-to-agent-通讯的真实边界"><a href="#Agent-to-agent-通讯的真实边界" class="headerlink" title="Agent-to-agent 通讯的真实边界"></a>Agent-to-agent 通讯的真实边界</h2><p>官方举例的场景之一是：你的功能在读库、队友在改 schema 时，agents 先约定工作顺序。听上去很理想，但文档同时给出了严格的安全边界。</p>
+<p>当你的 coordinator 需要队友工作中的信息时，它会直接向对方的 coordinator 发消息，你不必传话。每条消息都被投递，并遵守这些规则：</p>
+<ol>
+<li><strong>消息被标记为 agent input</strong>。接收方被告知是哪位队友的 agent 发来的。它把文本当作 <strong>untrusted input</strong> 来权衡，而不是当作它所服务的那个人发出的请求；在分享该人的 <strong>personal files 或 connector data</strong> 之前会先询问。</li>
+<li><strong>不会打断你的主聊天</strong>。队友消息进入从你聊天分叉出的侧边聊天，名为 <code>Chat with {name}&#39;s agent</code>。它根据你聊天已知的内容作答，回复回到发送方聊天，你的主聊天会在下一轮收到关于这次交换的说明。</li>
+<li><strong>侧边聊天只能回答</strong>。你可以读、停止或归档，但不能向它发消息。它 <strong>never shares secrets, credentials, or tokens</strong>。它可以读 task board 但不能改，也不能问你问题、请求访问、连接 source control、或管理 routines。</li>
+</ol>
+<p>这三条规则直接回答了安全团队最关心的问题：<strong>Agent 能不能随便互相指挥或自主执行对方仓库的任意操作？答案是不能</strong>。</p>
+<ul>
+<li><strong>不分享密钥</strong>：侧边聊天 never shares secrets, credentials, or tokens。</li>
+<li><strong>不改看板</strong>：侧边聊天可以读 task board 但不能改。</li>
+<li><strong>untrusted input</strong>：接收方将消息标记为 untrusted agent input，分享个人文件或连接器数据前会询问。</li>
+<li><strong>只回答，不执行</strong>：侧边聊天不能问你问题、请求访问、连接 source control、或管理 routines。</li>
+</ul>
+<p>官方博客里的 agent-to-agent 协作示例（工程师给产品页加 reviews、设计师同时在改版时，双方 coordinator 能提前发现重叠并对齐；或功能在读库、队友在改 schema 时约定工作顺序）是<strong>官方自我描述</strong>，不是独立评测。写给团队的策略时，应该先标明这些是官方举例，再基于上述三条规则判断实际风险接受度。</p>
+<p>简单总结：<strong>不要把「coordinator 互发消息」写成「Agent 可以自主执行对方仓库的任意操作」或「没有审批」。文档写的是 untrusted input、分享个人文件&#x2F;连接器数据前会询问、侧边聊天不能改 task board、不分享密钥。</strong></p>
+<h2 id="计费怎么算：按何人跑"><a href="#计费怎么算：按何人跑" class="headerlink" title="计费怎么算：按何人跑"></a>计费怎么算：按何人跑</h2><p>官方明确：<strong>每位加入者的聊天以其本人身份运行并计费</strong>（Their chat runs and bills as them）。不要写成”全算在 Project owner 头上”。</p>
+<p>Cloud Agents 用量与编辑器&#x2F;CLI 里的 Agent <strong>使用同一套 plan usage</strong>，按所选模型费率计费。更大的 context window 可能增加 token 用量与费用。<a target="_blank" rel="noopener" href="https://cursor.com/help/ai-features/cloud-agents">Cloud Agents 帮助页</a></p>
+<p>The X Subscription 公开标价（<a target="_blank" rel="noopener" href="https://cursor.com/help/account-and-billing/pricing">官方定价页</a>，价格不含税，<strong>以官方页面为准</strong>）：</p>
+<ul>
+<li>Free $0，有限用量</li>
+<li>Plus $8&#x2F;mo（Base）；年付 $80&#x2F;yr</li>
+<li>Premium $30&#x2F;mo（4x Plus）；年付 $300&#x2F;yr</li>
+<li>Super $100&#x2F;mo（15x Plus）；年付 $1,000&#x2F;yr</li>
+<li>Ultra $200&#x2F;mo（50x Plus）；年付 $2,000&#x2F;yr</li>
+<li>Teams：$30、$100 或 $200 per seat&#x2F;mo，用量与对应席位档一致</li>
+</ul>
+<p>补充：</p>
+<ul>
+<li>每个付费套餐包含 Cursor models（Grok 4.7、Grok 4.6、Grok 4.5、Composer 2.5）的 weekly pool，Cursor 与 Grok 共享。</li>
+<li>Plus 在固定设置下运行这些模型（Fast off, medium effort），<strong>不含</strong> Auto、Cloud Agents、Automations、Bugbot、Origin 或第三方模型。</li>
+<li>Premium and above 包含上述能力；第三方模型按 API list price，从 prepaid credit 支付。</li>
+</ul>
+<p>Teams 席位补充（<a target="_blank" rel="noopener" href="https://cursor.com/docs/account/teams/pricing">Teams 定价页</a>）：</p>
+<ul>
+<li>Teams 席位档：Premium $30、Super $100、Ultra $200 per user&#x2F;mo；另有 Free seat $0（无团队用量额度，走个人套餐或免费少量额度）。</li>
+<li>付费席位各有自己的 weekly pool，<strong>席位之间不共享 weekly pool，用量不在成员间转移</strong>。</li>
+<li>第三方模型不包含在内，按 list API prices 加上 Cursor Token Rate（$0.25 per million tokens），从团队 prepaid balance 支付。</li>
+</ul>
+<p>这意味着：<strong>多人场景下，每个人的 coordinator 和 workers 消耗的是各自的 weekly pool。不要寄希望于「大家共用一个池子」</strong>。如果团队有 5 个人加入同一个 Project，5 个人各自的聊天消耗各自的 weekly pool。Owner 不会被扣掉所有人的用量。</p>
+<p>旧的 request-based 套餐上仍从 included requests 扣除，但 Cloud Agents 总是以 Max Mode 运行，按 API rates 加 Max Mode upcharge 计价，并以 request-equivalents 计入 included requests。超额后走 on-demand。详见官方 Models &amp; Pricing。</p>
+<p><strong>禁止</strong>：使用过时的 fast&#x2F;slow requests 叙述；把套餐差异写成「某一方不能自主执行」；编造未在官网上的 Projects 单独加价。不要把 2026 年 6 月旧文里的 Teams Standard $40 &#x2F; Premium $120 当作现行 The X Subscription 标价（那是 legacy Teams seats）。</p>
+<h2 id="技术负责人决策清单：什么时候该开共享-Project"><a href="#技术负责人决策清单：什么时候该开共享-Project" class="headerlink" title="技术负责人决策清单：什么时候该开共享 Project"></a>技术负责人决策清单：什么时候该开共享 Project</h2><p>明确了硬门槛、共享边界、agent-to-agent 规则和计费方式之后，可以进入决策清单了。</p>
+<p><img src="/images/cursor-projects-decision_1604.jpg" alt="决策清单：前提与决策要点"></p>
+<p><em>示意：Prerequisites（Team account, Cursor 3.26.13+, Repo access, Not Legacy Privacy Mode）与 Decide first（Who owns the context, Billing runs as each person, What stays in personal store, Who may invite）</em></p>
+<h3 id="Prerequisites（前提）"><a href="#Prerequisites（前提）" class="headerlink" title="Prerequisites（前提）"></a>Prerequisites（前提）</h3><p>在考虑”该不该开”之前，先确认这些条件：</p>
+<ul>
+<li><strong>Team account</strong>：必须有团队账号。</li>
+<li><strong>Cursor 3.26.13+</strong>：客户端版本到位。Enterprise teams 还需先确认 Projects 本身可用（3.21.9+）。</li>
+<li><strong>Repo access</strong>：队友需要有该 Project 仓库的访问权限。</li>
+<li><strong>Not Legacy Privacy Mode</strong>：不在 Legacy Privacy Mode、不在 self-hosted machine、不是 archived 的 Project。</li>
+</ul>
+<h3 id="Decide-first（先决策）"><a href="#Decide-first（先决策）" class="headerlink" title="Decide first（先决策）"></a>Decide first（先决策）</h3><p>官方并没有给出”什么工作适合共享 Project”的标准清单。下面是基于文档与博客示例，结合技术负责人视角的建议：</p>
+<h4 id="1-Who-owns-the-context（谁拥有上下文）"><a href="#1-Who-owns-the-context（谁拥有上下文）" class="headerlink" title="1. Who owns the context（谁拥有上下文）"></a>1. Who owns the context（谁拥有上下文）</h4><ul>
+<li><strong>适合共享 Project 的场景</strong>：跨多 PR 的特性、迁移、on-call 交接、设计师与工程师重叠的工作、跨月维护的需求。这些场景的共同点是：<strong>上下文需要跨人传递，且持续时间较长</strong>。</li>
+<li><strong>不适合共享 Project 的场景</strong>：个人探索性任务、快速修 bug、临时脚本、敏感代码审查、个人实验。这些场景的共同点是：<strong>上下文不需要传给别人，或者涉及个人隐私、敏感信息</strong>。</li>
+</ul>
+<p>官方举例：他们多个团队把 on-call 放在共享 Project 里；交接时新工程师的 coordinator 会先 check in，再从现状接手——进行中的工作、未处理的问题、需要交接的 incidents 与笔记、以及要盯着的 channels &#x2F; Linear boards &#x2F; threads。进行中的工作甚至可以直接移交：新来的人的 agent 接着做。</p>
+<p>这是官方自我描述，不是本机实测，但它揭示了一个决策标准：<strong>当工作需要交接，且交接成本高时，共享 Project 的价值最大</strong>。</p>
+<h4 id="2-Billing-runs-as-each-person（计费按各人跑）"><a href="#2-Billing-runs-as-each-person（计费按各人跑）" class="headerlink" title="2. Billing runs as each person（计费按各人跑）"></a>2. Billing runs as each person（计费按各人跑）</h4><ul>
+<li><strong>每个人的聊天消耗各自的 weekly pool</strong>。团队需要提前规划：如果 5 个人都在同一个 Project 里高频使用 coordinator，5 个人各自的 weekly pool 都会被消耗。</li>
+<li><strong>不要寄希望于「大家共用一个池子」</strong>。也不要把用量全算在 owner 头上。</li>
+</ul>
+<h4 id="3-What-stays-in-personal-store（什么留在个人-store）"><a href="#3-What-stays-in-personal-store（什么留在个人-store）" class="headerlink" title="3. What stays in personal store（什么留在个人 store）"></a>3. What stays in personal store（什么留在个人 store）</h4><ul>
+<li><strong>个人 store（<code>/cursor/stores/user</code>）</strong>：Preferences、skills、个人历史、个人实验、敏感信息。队友的 agents 永远看不到。</li>
+<li><strong>Project store（<code>/cursor/stores/self</code>）</strong>：需求文档、图、技术规格、mockups、团队决策、共享上下文。所有成员的 agents 都会读写。</li>
+</ul>
+<p>技术负责人应该在 Project 设置初期，主动决定哪些上下文应该进入 Project store，哪些应该留在个人 store。队友加入时，coordinator 可以提议把 preference 拷进 Project rules，但只拷贝你批准的内容。</p>
+<h4 id="4-Who-may-invite（谁可以邀请）"><a href="#4-Who-may-invite（谁可以邀请）" class="headerlink" title="4. Who may invite（谁可以邀请）"></a>4. Who may invite（谁可以邀请）</h4><ul>
+<li><strong>Owner 和任何已加入的人都可以邀请队友</strong>。</li>
+<li><strong>也可通过 Project 链接加入</strong>：只有已在 Project 里的人能复制链接。owner 可用 Reset Share Link 让先前的拷贝失效。</li>
+</ul>
+<p>这意味着：<strong>邀请权不是 owner 独享的</strong>。如果团队需要严格控制谁能加入，需要在 Project 设置初期就明确规则，并定期 review 成员列表。</p>
+<h3 id="一个决策流程示例"><a href="#一个决策流程示例" class="headerlink" title="一个决策流程示例"></a>一个决策流程示例</h3><p>假设技术负责人要决定是否为一个跨三个月的数据迁移开一个共享 Project：</p>
+<ol>
+<li><strong>确认前提</strong>：团队有 team account，客户端版本 3.26.13+，仓库权限到位，不在 Legacy Privacy Mode。</li>
+<li><strong>判断上下文归属</strong>：迁移涉及数据库、API、前端、测试，需要多人接力，且跨月维护。<strong>适合共享 Project</strong>。</li>
+<li><strong>计费规划</strong>：参与的 5 个人各自消耗各自的 weekly pool。预估每人每周 10-20 次 coordinator 交互，在 Premium 档位内。<strong>可接受</strong>。</li>
+<li><strong>划定 store 边界</strong>：迁移脚本、数据 schema、API 文档、测试计划进 Project store；个人调试脚本、临时测试数据留在个人 store。</li>
+<li><strong>邀请规则</strong>：只有 owner 和指定的 tech lead 可以邀请新成员。其他人需要先请示。定期 review 成员列表。</li>
+</ol>
+<p>如果判断结果是”不适合”，那就让每个人各自开个人 Project，通过 PR comments 或 Slack 同步进度，而不是强行把所有人塞进一个共享 Project。</p>
+<h2 id="和近期热点怎么错开看"><a href="#和近期热点怎么错开看" class="headerlink" title="和近期热点怎么错开看"></a>和近期热点怎么错开看</h2><ul>
+<li><strong>Cursor Live Apps &#x2F; Build live apps</strong>：那是从 localhost 到可分享托管链接、内部工具托管，是另一条产品线。本篇讲的是团队 Agent 工作区，不是工具托管。仓库里已有待审 PR #14《Cursor Live Apps：从 localhost 到可分享链接》。</li>
+<li><strong>AI Agent 为什么越聊越糊涂？上下文工程实践</strong>：那篇讲的是个人会话上下文失效原理与管理策略。本篇重点是团队级上下文治理与共享边界。</li>
+<li>不要把扩展能写 <code>authorized_keys</code> 误写成「Agent 默认就能自主执行任意系统配置」——那是<strong>扩展进程权限 + 分发完整性</strong>问题，不是 Agent 产品的审批开关文案。本篇也不涉及这类供应链安全话题。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>Cursor Projects 现已支持多人协作，但不是所有用户、所有工作都适合开共享 Project。技术负责人的决策清单应该包括：</p>
+<ol>
+<li><strong>确认硬门槛</strong>：套餐、团队账号、客户端版本、仓库权限、不在 Legacy Privacy Mode。</li>
+<li><strong>理解共享边界</strong>：共享的是 task board 与 Project store（<code>/cursor/stores/self</code>），不共享个人 store（<code>/cursor/stores/user</code>）。每个人有自己的 chat、coordinator 和 workers。</li>
+<li><strong>明确 agent-to-agent 规则</strong>：消息标记为 untrusted input，侧边聊天只能回答，不分享密钥，不改看板。</li>
+<li><strong>计费规则</strong>：每位加入者的聊天以其本人身份运行并计费，消耗各自的 weekly pool，席位之间不共享。</li>
+<li><strong>决策清单</strong>：谁拥有上下文、计费按各人跑、什么留在个人 store、谁可以邀请。</li>
+</ol>
+<p><strong>适合共享 Project 的场景</strong>：跨多 PR 的特性、迁移、on-call 交接、设计师与工程师重叠的工作、跨月维护的需求。<strong>不适合的场景</strong>：个人探索性任务、快速修 bug、临时脚本、敏感代码审查、个人实验。</p>
+<p>官方博客里的 agent-to-agent 协作示例是官方自我描述，不是独立评测。真正落地时，应该基于文档明确的 untrusted input、侧边聊天只读回答、不分享密钥等规则，判断实际风险接受度。</p>
+<p>最后，<strong>不要把「beta 推出」写成「所有套餐都能分享」</strong>。功能在推出，但套餐、团队账号、客户端版本和仓库权限仍是硬门槛。也不要把「coordinator 互发消息」写成「Agent 可以自主执行对方仓库的任意操作」。</p>
+<p><em>核验说明：本文主要依据 <a target="_blank" rel="noopener" href="https://cursor.com/docs/agent/projects">Cursor Projects 文档</a>、<a target="_blank" rel="noopener" href="https://cursor.com/help/ai-features/projects">帮助页面</a>、<a target="_blank" rel="noopener" href="https://cursor.com/blog/projects-multiplayer">官方博客</a>、<a target="_blank" rel="noopener" href="https://cursor.com/help/ai-features/cloud-agents">Cloud Agents 帮助页</a>、<a target="_blank" rel="noopener" href="https://cursor.com/help/account-and-billing/pricing">官方定价页</a> 与 <a target="_blank" rel="noopener" href="https://cursor.com/docs/account/teams/pricing">Teams 定价页</a> 整理；非本机完整实测。发布前请以官方文档最新版为准。</em></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/Cursor/" rel="tag"># Cursor</a>
+              <a href="/tags/Projects/" rel="tag"># Projects</a>
+              <a href="/tags/Cloud-Agents/" rel="tag"># Cloud Agents</a>
+              <a href="/tags/%E5%9B%A2%E9%98%9F%E5%8D%8F%E4%BD%9C/" rel="tag"># 团队协作</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/11/GitHub%20Copilot%20%E8%BF%9B%E5%85%A5%20Xcode%20%E5%86%85%E7%BD%AE%E5%8A%A9%E6%89%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E9%80%89%E8%B7%AF%E5%BE%84/" rel="prev" title="GitHub Copilot 进入 Xcode 内置助手：技术负责人该怎么选路径">
+                  <i class="fa fa-angle-left"></i> GitHub Copilot 进入 Xcode 内置助手：技术负责人该怎么选路径
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/" rel="next" title="Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界">
+                  Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"63d6c0db4156f77b6e66d7ba1e647cea"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

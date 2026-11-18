@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="A2UI 1.0 协议已稳定，但技术负责人要判断的不是聊天能不能出图表,而是生成式 UI 该出现在哪些画面、目录与校验边界怎么定、哪些交互走 LLM、选哪个渲染器时要核对成熟度差异。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界">
+<meta property="og:url" content="https://devloong.com/2026/11/18/A2UI%201.0%E6%9D%A5%E4%BA%86%EF%BC%9A%E7%94%9F%E6%88%90%E5%BC%8FUI%E8%BF%9B%E7%94%9F%E4%BA%A7%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="A2UI 1.0 协议已稳定，但技术负责人要判断的不是聊天能不能出图表,而是生成式 UI 该出现在哪些画面、目录与校验边界怎么定、哪些交互走 LLM、选哪个渲染器时要核对成熟度差异。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/a2ui-10-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/a2ui-10-decision-boundary.jpg">
+<meta property="og:image" content="https://devloong.com/images/a2ui-10-architecture.jpg">
+<meta property="article:published_time" content="2026-11-18T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-18T07:47:19.634Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="A2UI">
+<meta property="article:tag" content="Flutter">
+<meta property="article:tag" content="客户端">
+<meta property="article:tag" content="技术负责人">
+<meta property="article:tag" content="生成式UI">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/a2ui-10-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/18/A2UI%201.0%E6%9D%A5%E4%BA%86%EF%BC%9A%E7%94%9F%E6%88%90%E5%BC%8FUI%E8%BF%9B%E7%94%9F%E4%BA%A7%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/18/A2UI%201.0%E6%9D%A5%E4%BA%86%EF%BC%9A%E7%94%9F%E6%88%90%E5%BC%8FUI%E8%BF%9B%E7%94%9F%E4%BA%A7%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BE%B9%E7%95%8C/","path":"2026/11/18/A2UI 1.0来了：生成式UI进生产，技术负责人该怎么定客户端边界/","title":"A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%88%AB%E6%8A%8A%E3%80%8C%E5%8D%8F%E8%AE%AE-1-0%E3%80%8D%E5%92%8C%E3%80%8C%E5%90%84%E7%AB%AF%E6%B8%B2%E6%9F%93%E5%99%A8%E6%88%90%E7%86%9F%E5%BA%A6%E3%80%8D%E6%90%85%E5%9C%A8%E4%B8%80%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">先别把「协议 1.0」和「各端渲染器成熟度」搅在一起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%95%E6%97%B6%E7%94%A8%E7%A1%AE%E5%AE%9A%E6%80%A7-UI-%E4%BD%95%E6%97%B6%E7%94%A8%E7%94%9F%E6%88%90%E5%BC%8F-UI"><span class="nav-number">2.</span> <span class="nav-text">何时用确定性 UI,何时用生成式 UI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E8%BE%B9%E7%95%8C-Catalog-%E7%99%BD%E5%90%8D%E5%8D%95%E3%80%81%E5%8F%8C%E5%B1%82%E6%8A%A4%E6%A0%8F%E3%80%81MessageProcessor"><span class="nav-number">3.</span> <span class="nav-text">架构边界:Catalog 白名单、双层护栏、MessageProcessor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8C%E5%B1%82%E6%8A%A4%E6%A0%8F-Dual-layer-guardrails"><span class="nav-number">3.1.</span> <span class="nav-text">双层护栏(Dual-layer guardrails)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A-Catalog-%E6%94%AF%E6%8C%81"><span class="nav-number">3.2.</span> <span class="nav-text">多 Catalog 支持</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Extensibility-metadata"><span class="nav-number">3.3.</span> <span class="nav-text">Extensibility metadata</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E8%BE%B9%E7%95%8C-%E6%96%B0%E7%9A%84-LLM-turn-vs-callAgentFunction"><span class="nav-number">4.</span> <span class="nav-text">交互边界:新的 LLM turn vs callAgentFunction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Agent-SDK-%E4%B8%8E%E8%B7%A8%E8%AF%AD%E8%A8%80%E6%94%AF%E6%8C%81"><span class="nav-number">5.</span> <span class="nav-text">Agent SDK 与跨语言支持</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%98%E7%AE%A1%E4%B8%8E%E4%BA%A7%E5%93%81%E8%BE%B9%E7%95%8C-MCP-Apps-%E4%B8%8E%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8A%A9%E6%89%8B"><span class="nav-number">6.</span> <span class="nav-text">托管与产品边界:MCP Apps 与第三方助手</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E7%9A%84%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%B8%85%E5%8D%95"><span class="nav-number">7.</span> <span class="nav-text">给技术负责人的可执行清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%94%BB%E9%9D%A2%E7%9B%98%E7%82%B9-%E5%85%88%E6%8C%82%E5%93%AA%E4%BA%9B%E5%9C%BA%E6%99%AF"><span class="nav-number">7.1.</span> <span class="nav-text">1. 画面盘点:先挂哪些场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Catalog-%E5%BD%92%E5%B1%9E-%E8%B0%81%E5%AE%9A%E4%B9%89%E3%80%81%E8%B0%81%E7%BB%B4%E6%8A%A4"><span class="nav-number">7.2.</span> <span class="nav-text">2. Catalog 归属:谁定义、谁维护</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86"><span class="nav-number">7.3.</span> <span class="nav-text">3. 校验失败怎么处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BA%A4%E4%BA%92%E8%B7%AF%E5%BE%84-%E5%93%AA%E4%BA%9B%E8%B5%B0%E7%A1%AC%E5%87%BD%E6%95%B0"><span class="nav-number">7.4.</span> <span class="nav-text">4. 交互路径:哪些走硬函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E6%B8%B2%E6%9F%93%E5%99%A8%E7%89%88%E6%9C%AC%E6%A0%B8%E5%AF%B9"><span class="nav-number">7.5.</span> <span class="nav-text">5. 渲染器版本核对</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E6%95%8F%E6%84%9F%E6%95%B0%E6%8D%AE%E4%B8%8E-metadata-%E7%BB%91%E5%AE%9A"><span class="nav-number">7.6.</span> <span class="nav-text">6. 敏感数据与 metadata 绑定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8A%A9%E6%89%8B%E8%BE%B9%E7%95%8C-%E5%A6%82%E6%9E%9C%E9%9C%80%E8%A6%81"><span class="nav-number">7.7.</span> <span class="nav-text">7. 第三方助手边界(如果需要)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E6%8E%A8%E7%90%86%E6%88%90%E6%9C%AC%E4%B8%8E-Express-format"><span class="nav-number">7.8.</span> <span class="nav-text">8. 推理成本与 Express format</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/18/A2UI%201.0%E6%9D%A5%E4%BA%86%EF%BC%9A%E7%94%9F%E6%88%90%E5%BC%8FUI%E8%BF%9B%E7%94%9F%E4%BA%A7%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界 | Loong's Blog">
+      <meta itemprop="description" content="A2UI 1.0 协议已稳定，但技术负责人要判断的不是聊天能不能出图表,而是生成式 UI 该出现在哪些画面、目录与校验边界怎么定、哪些交互走 LLM、选哪个渲染器时要核对成熟度差异。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A2UI 1.0 来了：生成式 UI 进生产，技术负责人该怎么定客户端边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-11-18 10:00:00 / 修改时间：15:47:19" itemprop="dateCreated datePublished" datetime="2026-11-18T10:00:00+08:00">2026-11-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">A2UI 1.0 协议已稳定，但技术负责人要判断的不是聊天能不能出图表,而是生成式 UI 该出现在哪些画面、目录与校验边界怎么定、哪些交互走 LLM、选哪个渲染器时要核对成熟度差异。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 11 月,A2UI 协议发布了第一个稳定版 <strong>1.0</strong>。Agent 描述想展示什么,应用用自己的原生组件渲染——不用换 UI 框架,不用重写设计系统。Flutter 官方博客宣布 <code>a2ui_flutter</code> 包与协议对齐,Google 开发者博客点名 Atlassian、Alation、Bloomberg、ByteDance 已在生产用 A2UI。(<a target="_blank" rel="noopener" href="https://flutter.dev/blog/a2ui-launch">Flutter 博客</a>、<a target="_blank" rel="noopener" href="https://developers.googleblog.com/en/a2ui-10-build-delightful-fast-reliable-agentic-experiences/">Google Developers 博客</a>)</p>
+<p>但对技术负责人来说,真正要先问清的不是「聊天框里能不能出个图表」,而是:<strong>生成式 UI 该不该进生产客户端、该进哪些画面、目录与校验边界怎么定、哪些交互走 LLM、哪些走硬函数、以及协议 1.0 已稳定但各端渲染器成熟度不一致时怎么选型。</strong> 这些边界不钉死,协议再稳也落不了地。</p>
+<p>本文依据截至 <strong>2026-11-18</strong> 的 Flutter 官方博客与 Google 开发者博客解读,<strong>不是</strong>本团队实测,也未在生产 App 里接入 <code>a2ui_flutter</code>。我会在文末列出官方链接供核验。</p>
+<p><img src="/images/a2ui-10-hero.jpg" alt="封面:Agent通过A2UI协议与客户端协作"></p>
+<p><em>概念配图:Agent 生成结构化消息,A2UI 1.0 协议层通过组件目录白名单校验,客户端用原生组件渲染,跨设备保持一致体验。</em></p>
+<span id="more"></span>
+
+<h2 id="先别把「协议-1-0」和「各端渲染器成熟度」搅在一起"><a href="#先别把「协议-1-0」和「各端渲染器成熟度」搅在一起" class="headerlink" title="先别把「协议 1.0」和「各端渲染器成熟度」搅在一起"></a>先别把「协议 1.0」和「各端渲染器成熟度」搅在一起</h2><p>A2UI 1.0 是<strong>协议的第一个稳定版</strong>,定义了 Agent 与客户端之间怎么传消息、怎么描述组件树、怎么校验层级关系、怎么调后端函数。协议稳定意味着:Agent SDK 生成的消息结构、Express inference format、双层护栏机制(allowedParents &#x2F; allowedChildren)、多 Catalog 支持、callAgentFunction 双向调用等核心能力已经冻结 API,可以进生产了。</p>
+<p>但<strong>渲染器的成熟度不一致</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>平台&#x2F;框架</th>
+<th>当前状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Flutter</strong> (mobile &#x2F; web &#x2F; desktop)</td>
+<td><strong>1.0</strong> (<code>a2ui_flutter</code>)</td>
+<td>从 <code>genui</code> 更名并对齐协议;官方演示用 Commis 餐饮 App</td>
+</tr>
+<tr>
+<td><strong>Web</strong> (React &#x2F; Angular &#x2F; Lit)</td>
+<td><strong>1.0</strong></td>
+<td>Google 博客明确支持;也可用于 MCP Apps</td>
+</tr>
+<tr>
+<td><strong>SwiftUI</strong> (iOS)</td>
+<td><strong>1.0</strong></td>
+<td>Google 博客列为 1.0 支持</td>
+</tr>
+<tr>
+<td><strong>Jetpack Compose</strong> (Android)</td>
+<td><strong>v0.9.1</strong>,v1.0 <strong>coming soon</strong></td>
+<td>官方写明「目前是 0.9.1,1.0 即将推出」</td>
+</tr>
+<tr>
+<td><strong>Gemini 托管</strong></td>
+<td><strong>0.9.1</strong></td>
+<td>Gemini 今天支持 A2UI 0.9.1</td>
+</tr>
+<tr>
+<td><strong>ByteDance Lynx</strong></td>
+<td><strong>0.9</strong>,正与 A2UI 团队适配 1.0</td>
+<td>官方说明</td>
+</tr>
+</tbody></table>
+<p>这意味着:<strong>你选 Flutter&#x2F;Web&#x2F;SwiftUI 可以直接上 1.0 协议的全部特性;选 Compose 或要在 Gemini 里渲染,今天还得对齐 0.9 的限制,等升级。</strong> 技术负责人做客户端架构时,必须先分清「协议能力」和「目标平台渲染器版本」,不要把「1.0 已发布」当成「所有端都就绪」。</p>
+<h2 id="何时用确定性-UI-何时用生成式-UI"><a href="#何时用确定性-UI-何时用生成式-UI" class="headerlink" title="何时用确定性 UI,何时用生成式 UI"></a>何时用确定性 UI,何时用生成式 UI</h2><p>官方给了一条非常明确的 rule of thumb (Flutter 博客原文):</p>
+<blockquote>
+<p><strong>Generative UI is not intended to replace existing, hardcoded screens in your application.</strong> Standard forms, lists, and navigation tabs already clearly serve workflows and should continue to use deterministic UI. GenUI is suited for scenarios where <strong>the correct interface depends on reasoning about open-ended context.</strong></p>
+</blockquote>
+<p>翻译过来就是:<strong>标准表单、列表、导航 Tab 已经能清楚承担工作流的,就应该继续用确定性 UI。生成式 UI 适合「正确界面取决于对开放上下文的推理」的场景。</strong></p>
+<p>官方演示用的 Commis 餐饮 App (Flutter 博客演示,非本文实测):用户说「我对贝壳过敏,给我推荐一些菜」,App 基于用户档案、餐厅现有菜单与过敏信息,动态组装出推荐卡片。这种场景下,事先写死的表单无法覆盖所有可能的对话上下文与意图组合,GenUI 才有价值。</p>
+<p>再看 Google 博客点名的几个落地案例:</p>
+<ul>
+<li><strong>Atlassian Jira</strong>:把工作项交给 AI Agent,Agent 需要跟进时用<strong>交互卡片</strong>询问用户(例如「要不要把这个 bug 优先级改成 P0?」)。这是开放上下文推理,不是每次都能提前写好表单。</li>
+<li><strong>Alation AIOS feed</strong>:用 A2UI 渲染指标卡与图表,同一 feed 可在 Claude 与 Alation 自己的产品里呈现。内容结构依赖数据治理上下文,不是固定导航。</li>
+<li><strong>Gemini Notebook</strong>:用卡片确认「要不要生成幻灯片&#x2F;视频概览」的选项。这是对话中间态,写成硬编码表单会割裂流程。</li>
+</ul>
+<p>相反,如果你的 App 里已经有「创建订单」「编辑用户资料」「设置通知偏好」这些表单,<strong>它们不应该被 GenUI 替换</strong>——确定性 UI 更快、更可预测、延迟更低,用户也早已习惯那套交互。技术负责人要做的第一个判断是:<strong>先列出 App 里哪些画面属于开放上下文推理,哪些不是。</strong> 只把前者挂上 GenUI。</p>
+<p><img src="/images/a2ui-10-decision-boundary.jpg" alt="决策框架:何时用确定性UI vs生成式UI,何时开新LLM turn vs调硬函数"></p>
+<p><em>决策框架图:左上象限(确定性 UI)适合标准表单&#x2F;列表&#x2F;导航;右上象限(生成式 UI)适合开放上下文推理;下半部分区分新 LLM turn(开放问题、深挖)与 callAgentFunction(滑块、过滤器、就地更新)。</em></p>
+<h2 id="架构边界-Catalog-白名单、双层护栏、MessageProcessor"><a href="#架构边界-Catalog-白名单、双层护栏、MessageProcessor" class="headerlink" title="架构边界:Catalog 白名单、双层护栏、MessageProcessor"></a>架构边界:Catalog 白名单、双层护栏、MessageProcessor</h2><p>A2UI 1.0 的核心架构约束在于:<strong>Agent SDK 教给模型的是 UI 组件目录(Catalog),客户端在渲染前用 MessageProcessor 强制校验,无效层级会被拦下并通知 Agent。</strong></p>
+<p><img src="/images/a2ui-10-architecture.jpg" alt="A2UI Pipeline Architecture"></p>
+<p><em>架构流程:Agent SDK 定义组件目录 → A2UI Messages(含 Express format)→ MessageProcessor 校验结构与层级关系 → Native Widgets 渲染;callAgentFunction 可绕过 LLM 直接调后端硬函数。</em></p>
+<p>注意图中第一框英文写了「teaches a catalog of available agent functions」,但这句<strong>不够精确</strong>——准确说法是 Agent SDK 教给模型的是<strong>UI 组件目录</strong>,不是 Agent 能调的所有函数。目录里定义的是「Card、Chart、Button、Form 这些组件以及它们的 allowedParents &#x2F; allowedChildren」,不是业务函数清单。</p>
+<h3 id="双层护栏-Dual-layer-guardrails"><a href="#双层护栏-Dual-layer-guardrails" class="headerlink" title="双层护栏(Dual-layer guardrails)"></a>双层护栏(Dual-layer guardrails)</h3><p>Flutter 博客专门强调了这套机制:</p>
+<ol>
+<li><strong>Catalog schema 里写明 allowedParents &#x2F; allowedChildren</strong>:例如官方示例 MyButton 只能被 Row&#x2F;Column 包裹(allowedParents),只能包 Text&#x2F;Icon(allowedChildren)。这套规则既会进 Agent prompt(让模型在生成时遵守),也会在客户端建组件前强制校验。</li>
+<li><strong>客户端校验失败时</strong>,<code>a2ui_flutter</code> 不会崩溃或渲染破损 UI,而是拦下非法层级,返回错误码 <code>UNALLOWED_PARENT</code> 或 <code>UNALLOWED_CHILD</code>,并通知 Agent 重新生成。</li>
+</ol>
+<p>这是一套<strong>双向护栏</strong>:prompt shaping 降低模型犯错概率,client validation 兜底。技术负责人要做的第二个判断是:<strong>谁来定义与维护 Catalog?</strong> 建议答案是:UI 组件库 owner(设计系统团队或客户端架构)负责定义 Catalog、编写 allowedParents&#x2F;allowedChildren、并与 Agent 开发团队一起测试非法层级的错误处理流程。不要让 Agent 侧自己随便改 Catalog,那会绕过客户端的约束。</p>
+<h3 id="多-Catalog-支持"><a href="#多-Catalog-支持" class="headerlink" title="多 Catalog 支持"></a>多 Catalog 支持</h3><p>A2UI 0.9 时,一个 Surface(画面)只能锁定单一 Catalog;1.0 允许一个 Surface 混用多个 Catalog。Flutter 官方示例:</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">MessageProcessor</span>(</span><br><span class="line">  catalogs: [</span><br><span class="line">    <span class="title class_">CommonCatalog</span>(),</span><br><span class="line">    <span class="title class_">HealthWidgetsCatalog</span>(),</span><br><span class="line">    <span class="title class_">CustomChartCatalog</span>()</span><br><span class="line">  ]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>(这是官方示例,非本文实测代码。)</p>
+<p>实际落地时,我建议:<strong>按业务域拆 Catalog,而不是全塞一个大目录。</strong> 例如金融 App 可以有 CommonCatalog(按钮、卡片、表单)、ChartCatalog(K 线图、柱状图)、TransactionCatalog(交易确认卡、风险提示)。这样做有两个好处:</p>
+<ol>
+<li><strong>权限分层</strong>:某些 Agent session 只给 CommonCatalog,不给 TransactionCatalog,降低误触发交易组件的风险。</li>
+<li><strong>变更隔离</strong>:ChartCatalog 升级不影响 CommonCatalog 的稳定性。</li>
+</ol>
+<p>但不要拆得太碎——每个 Catalog 都会进 prompt,过多 Catalog 会吃 token 并拖慢推理。</p>
+<h3 id="Extensibility-metadata"><a href="#Extensibility-metadata" class="headerlink" title="Extensibility metadata"></a>Extensibility metadata</h3><p>1.0 还加了可扩展的 metadata,可以挂在 Surface、组件、Catalog 定义和 action 上,用于路由标志、样式提示、安全上下文、correlation token 等。Google 博客提到一个关键用法:<strong>可以在服务端把数据与子组件绑定,从而让敏感值不进入模型。</strong></p>
+<p>但这<strong>不是自动保护</strong>——它是协议&#x2F;实现设计主张,实际效果取决于你是否按这套约定绑定数据。不要把「A2UI 支持 metadata」写成「用了 A2UI 就自动保证敏感数据不会发给模型」。技术负责人要做的第三个判断是:<strong>哪些字段必须走 metadata 绑定、哪些可以进 prompt,以及绑定失败时怎么降级。</strong></p>
+<h2 id="交互边界-新的-LLM-turn-vs-callAgentFunction"><a href="#交互边界-新的-LLM-turn-vs-callAgentFunction" class="headerlink" title="交互边界:新的 LLM turn vs callAgentFunction"></a>交互边界:新的 LLM turn vs callAgentFunction</h2><p>A2UI 1.0 区分两种交互路径:</p>
+<ol>
+<li><strong>New LLM turn</strong>:用户提出新问题或深挖,触发一轮完整的模型推理,Agent 返回新的组件树。这会产生推理成本(具体资费取决于你选的模型与平台计费,本文不展开),耗时通常在秒级。</li>
+<li><strong>callAgentFunction</strong>:已渲染组件可以直接调用 Agent backend 上暴露的<strong>硬函数</strong>,不走 LLM,结果写回现有组件。这是确定性调用,延迟在亚秒级。</li>
+</ol>
+<p>Flutter 博客给出的判断标准:</p>
+<blockquote>
+<p>Clicking a bar in a chart and following a peanut prompt are suited for a new LLM turn. <strong>Sliders, steppers, and filters should not wait seconds for a round trip.</strong></p>
+</blockquote>
+<p>翻译过来:<strong>点图表柱、跟进提示词适合开新 LLM turn;滑块、stepper、过滤器不应该等数秒往返,应该走 callAgentFunction。</strong></p>
+<p>官方合作伙伴 Somnio Software 的投资伴侣示例(伙伴自述,非本文实测):stepper 调整仓位后,权重&#x2F;费用&#x2F;剩余现金<strong>就地更新 in under a second</strong>。这是 callAgentFunction 的典型场景。</p>
+<p>另一个合作伙伴 Solid Software 在 GenUI Clinic 原型中称(伙伴自述,非本文实测),换 Express inference format 后,全屏 dashboard 生成从 10 秒降到 5 秒。这是 Express 格式的优化效果,但<strong>不可外推到所有 App</strong>——它只是那个五组件示例在 Flutter 博客中称比压缩 JSON 少 46% 字符的官方说法,不是 Express 一律省 46%。</p>
+<p>技术负责人要做的第四个判断是:<strong>列出 App 里哪些交互可以就地调硬函数(滑块、分页、排序、过滤器、stepper),哪些必须走 LLM(开放问题、多轮深挖、复杂推理)。</strong> 前者用 callAgentFunction,后者开新 turn。</p>
+<p>但有一点必须钉死:<strong>callAgentFunction 不等于「Agent 不能自主执行」。</strong> 它是协议能力,能调什么函数、是否要审批、函数能不能修改数据,取决于你的 <strong>backend 暴露与权限设计</strong>。不要把协议层的 callAgentFunction 误写成安全保证——那是你自己写的 backend 的事。</p>
+<h2 id="Agent-SDK-与跨语言支持"><a href="#Agent-SDK-与跨语言支持" class="headerlink" title="Agent SDK 与跨语言支持"></a>Agent SDK 与跨语言支持</h2><p>A2UI 协议是语言中立的,Agent 可以用任何语言实现。官方目前提供:</p>
+<ul>
+<li><strong>Dart</strong>:<code>a2ui_agent</code>(新增包)</li>
+<li><strong>Python</strong>:<code>a2ui-agent-sdk</code>、<code>a2ui-adk</code>(Google ADK)、<code>a2ui-a2a</code>(A2A 协议)</li>
+<li><strong>TypeScript</strong>:<code>@a2ui/agent</code>(Node.js)</li>
+</ul>
+<p>任意一种 SDK 都可以驱动同一个 Flutter 应用。全栈 Dart 可以配合 Genkit Dart 框架;<code>genkit_a2ui</code> 中间件当前是 <strong>preview</strong>,不是稳定 GA,选型时要算上后续升级成本。</p>
+<p>客户端只需要实现一套 <code>MessageProcessor</code> + Catalog,Agent 换语言不影响客户端代码。这是协议分层的价值——技术负责人可以让 backend 团队自由选型,客户端只管好 Catalog 与校验。</p>
+<h2 id="托管与产品边界-MCP-Apps-与第三方助手"><a href="#托管与产品边界-MCP-Apps-与第三方助手" class="headerlink" title="托管与产品边界:MCP Apps 与第三方助手"></a>托管与产品边界:MCP Apps 与第三方助手</h2><p>Google 博客提到:Web 与 Flutter 渲染器还可以用在 <strong>MCP Apps</strong> 里,例如 Claude、Gemini 这类支持 MCP Apps 的助手。这意味着:你写的 A2UI 组件不仅能在自己 App 里渲染,还能出现在第三方助手的对话框里。</p>
+<p>Alation 的例子已经验证了这一点:同一个 AIOS feed 可以在 Claude 与 Alation 产品里呈现。</p>
+<p>但这带来新的边界判断:<strong>第三方助手里渲染你的 UI 时,目录、数据绑定与审计怎么管?</strong></p>
+<ol>
+<li><strong>Catalog 归谁管</strong>:如果第三方助手自己也有一套组件目录,你的 Agent 是用助手的目录,还是带自己的?建议答案:带自己的 Catalog,但要测试在助手环境里的渲染一致性。</li>
+<li><strong>数据绑定与敏感字段</strong>:你的 Agent backend 要知道当前渲染环境是自己 App 还是第三方助手,并据此决定哪些字段可以进 prompt、哪些必须走 metadata 绑定。不要让用户的敏感数据在第三方助手环境里裸奔。</li>
+<li><strong>审计与合规</strong>:用户在 Claude 里点了你的交易确认按钮,这个操作的审计日志归谁记、归谁查?建议答案:你的 backend 必须记完整审计(用户 ID、渲染环境、操作时间、结果),不能只依赖第三方助手的日志。</li>
+</ol>
+<p>技术负责人要做的第五个判断是:<strong>要不要让 A2UI 组件出现在第三方助手里,以及如果要,Catalog &#x2F; 数据绑定 &#x2F; 审计的边界怎么提前定好。</strong></p>
+<h2 id="给技术负责人的可执行清单"><a href="#给技术负责人的可执行清单" class="headerlink" title="给技术负责人的可执行清单"></a>给技术负责人的可执行清单</h2><p>如果你要评估 A2UI 进生产,建议按以下顺序落地:</p>
+<h3 id="1-画面盘点-先挂哪些场景"><a href="#1-画面盘点-先挂哪些场景" class="headerlink" title="1. 画面盘点:先挂哪些场景"></a>1. 画面盘点:先挂哪些场景</h3><ul>
+<li>列出 App 里属于「开放上下文推理」的画面(例如智能推荐、多轮对话辅助、动态数据探索)。</li>
+<li>暂时<strong>不挂</strong>标准表单、固定列表、导航 Tab——它们继续用确定性 UI。</li>
+<li>选 1-2 个风险可控的画面做 pilot,例如「数据看板的追问与下钻」或「客服对话里的动态卡片」。</li>
+</ul>
+<h3 id="2-Catalog-归属-谁定义、谁维护"><a href="#2-Catalog-归属-谁定义、谁维护" class="headerlink" title="2. Catalog 归属:谁定义、谁维护"></a>2. Catalog 归属:谁定义、谁维护</h3><ul>
+<li>由 UI 组件库 owner(设计系统团队或客户端架构)负责定义 Catalog、编写 allowedParents&#x2F;allowedChildren。</li>
+<li>Agent 开发团队参与测试非法层级的错误处理,但不自己改 Catalog。</li>
+<li>按业务域拆 Catalog(Common &#x2F; Chart &#x2F; Transaction 等),不要全塞一个。</li>
+</ul>
+<h3 id="3-校验失败怎么处理"><a href="#3-校验失败怎么处理" class="headerlink" title="3. 校验失败怎么处理"></a>3. 校验失败怎么处理</h3><ul>
+<li>客户端拦下 <code>UNALLOWED_PARENT</code> &#x2F; <code>UNALLOWED_CHILD</code> 时,不要只 log——要通知 Agent 重新生成,并给用户降级 UI(例如纯文本提示「正在重新生成」)。</li>
+<li>测试 Agent 收到错误通知后能否正确修正;如果重试多次仍失败,降级到确定性 UI 或人工客服。</li>
+</ul>
+<h3 id="4-交互路径-哪些走硬函数"><a href="#4-交互路径-哪些走硬函数" class="headerlink" title="4. 交互路径:哪些走硬函数"></a>4. 交互路径:哪些走硬函数</h3><ul>
+<li>列出 App 里的滑块、stepper、过滤器、排序、分页——这些走 callAgentFunction。</li>
+<li>列出开放问题、多轮深挖、图表柱点击——这些开新 LLM turn。</li>
+<li>在 backend 明确暴露哪些硬函数可以被 callAgentFunction 调用,并加权限校验与审计。</li>
+</ul>
+<h3 id="5-渲染器版本核对"><a href="#5-渲染器版本核对" class="headerlink" title="5. 渲染器版本核对"></a>5. 渲染器版本核对</h3><ul>
+<li>如果客户端是 <strong>Flutter &#x2F; Web &#x2F; SwiftUI</strong>,可以直接用 A2UI 1.0 全部特性。</li>
+<li>如果客户端是 <strong>Jetpack Compose</strong>,今天只能对齐 <strong>0.9.1</strong>,等 1.0 就绪后再升级。</li>
+<li>如果要在 <strong>Gemini 托管</strong>环境里渲染,今天只支持 <strong>0.9.1</strong>。</li>
+<li>如果用 <strong>ByteDance Lynx</strong>,今天是 <strong>0.9</strong>,正在适配 1.0。</li>
+</ul>
+<p>不要把「协议 1.0 已稳定」当成「所有端都能用 1.0」。</p>
+<h3 id="6-敏感数据与-metadata-绑定"><a href="#6-敏感数据与-metadata-绑定" class="headerlink" title="6. 敏感数据与 metadata 绑定"></a>6. 敏感数据与 metadata 绑定</h3><ul>
+<li>列出哪些字段不能进 prompt(用户身份证号、银行卡号、API token 等)。</li>
+<li>这些字段必须走 metadata 绑定,在服务端与子组件关联,客户端直接填充。</li>
+<li>测试绑定失败时的降级逻辑(例如不显示敏感字段,或换成脱敏版)。</li>
+</ul>
+<h3 id="7-第三方助手边界-如果需要"><a href="#7-第三方助手边界-如果需要" class="headerlink" title="7. 第三方助手边界(如果需要)"></a>7. 第三方助手边界(如果需要)</h3><ul>
+<li>决定要不要让 A2UI 组件出现在 Claude &#x2F; Gemini 等第三方助手里。</li>
+<li>如果要,backend 必须能识别渲染环境,并据此调整数据绑定与审计。</li>
+<li>测试在第三方助手里的渲染一致性与交互流程。</li>
+</ul>
+<h3 id="8-推理成本与-Express-format"><a href="#8-推理成本与-Express-format" class="headerlink" title="8. 推理成本与 Express format"></a>8. 推理成本与 Express format</h3><ul>
+<li>走 LLM turn 会产生推理成本,具体资费取决于你选的模型与平台计费。</li>
+<li>Express inference format 可以降低 token 消耗,Flutter 博客某个五组件示例称比压缩 JSON 少 46% 字符(但不可外推到所有 App)。</li>
+<li>测试 Express format 在你的实际组件树下的效果,再决定要不要开。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>A2UI 1.0 的核心价值在于:<strong>让 Agent 用你已有的设计系统组装界面,而不是重新发明一套 UI 框架。</strong> 协议稳定了,但技术负责人要判断的边界还有很多:哪些画面适合 GenUI、目录与校验归谁管、哪些交互走 LLM、哪些走硬函数、选哪个渲染器时要核对 0.9 vs 1.0 的差异、敏感数据怎么绑定、第三方助手里渲染时边界怎么定。</p>
+<p>这些边界不是协议文档能替你回答的——它们取决于你的 App 架构、业务风险、团队分工与合规要求。<strong>协议给了你一套可扩展的约定,但边界还得你自己钉。</strong></p>
+<p><em>核验说明:本文主要依据 <a target="_blank" rel="noopener" href="https://flutter.dev/blog/a2ui-launch">Flutter 官方博客</a>(2026-11-17,作者 Andrew Brogdon, Vishal Prabhu Motwani)与 <a target="_blank" rel="noopener" href="https://developers.googleblog.com/en/a2ui-10-build-delightful-fast-reliable-agentic-experiences/">Google Developers 博客</a>(2026-11-11,作者 Vishal Motwani &#x2F; Google A2UI Team)整理;未在生产 App 里接入 <code>a2ui_flutter</code>,未运行本文提及的合作伙伴演示。发布前请以官方文档最新版为准。</em></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/A2UI/" rel="tag"># A2UI</a>
+              <a href="/tags/Flutter/" rel="tag"># Flutter</a>
+              <a href="/tags/%E7%94%9F%E6%88%90%E5%BC%8FUI/" rel="tag"># 生成式UI</a>
+              <a href="/tags/%E5%AE%A2%E6%88%B7%E7%AB%AF/" rel="tag"># 客户端</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/16/Shopify%E7%94%A812%E5%91%A8%E6%8A%8AApp%E8%BF%81%E5%9B%9E%E5%8E%9F%E7%94%9F%EF%BC%9AAgent%E6%97%B6%E4%BB%A3%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%B7%A8%E7%AB%AF%E8%BE%B9%E7%95%8C/" rel="prev" title="Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界">
+                  <i class="fa fa-angle-left"></i> Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f02ae270c7d09f8d97582ccb7baeed83"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
