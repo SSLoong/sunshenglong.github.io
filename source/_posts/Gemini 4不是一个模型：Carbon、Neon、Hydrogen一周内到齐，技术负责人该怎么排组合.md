@@ -44,7 +44,7 @@ description: 2026年11月10日到18日八天内，Carbon、Hydrogen、Neon三个
 - **Neon** 在 Carbon 的最难长周期项目与 Hydrogen 的快速日常执行之间，承担「demanding daily workflows」的中间带；官方称端到端完成速度快、少做未请求的改动、降低无根据陈述。默认 high thinking level 下，每任务成本比 Carbon 低 32%（官方公布，未经本团队复测）。
 - **Hydrogen** 面向 everyday coding and agentic workflows 的速度与效率；可独立作为日常模型，也可在多模型工作流里给 Carbon/Argon 当 execution engine。官方称 high 默认设置下完成任务快 2.5 倍，Terminal-Bench 4.1 从 18.2% 到 57%（官方公布，未经本团队复测）。
 
-这四个模型都有从 low 到 xhigh 的 thinking levels，上下文窗口都达到 1 million tokens（官方博客）。**重点在于**：Carbon 不是「Argon 的升级替代品」，Argon 还是多数工程该用的选择；Carbon 是在需要深度推理与长周期验证时才动用的最强火力。
+**Thinking levels**：Carbon / Argon 支持 **low、medium（默认）、high** 三档；Neon / Hydrogen 支持 **low、medium、high（默认）、xhigh** 四档（官方定价与文档页）。上下文窗口都达到 1 million tokens（官方博客）。**重点在于**：Carbon 不是「Argon 的升级替代品」，Argon 还是多数工程该用的选择；Carbon 是在需要深度推理与长周期验证时才动用的最强火力。
 
 ### 第二层：Agent 运行时 ≠ 模型能力
 
