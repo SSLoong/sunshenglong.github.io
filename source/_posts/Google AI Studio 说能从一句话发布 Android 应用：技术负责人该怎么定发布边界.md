@@ -1,5 +1,5 @@
 ---
-title: Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界
+title: Google AI Studio 说能从一句话发布 Android 应用：发布边界还在商店和签名这边
 date: 2026-11-27 10:00:00
 categories:
   - AI编程

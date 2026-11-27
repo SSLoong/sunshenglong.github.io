@@ -1,5 +1,5 @@
 ---
-title: Shopify 用 12 周把 App 迁回原生：Agent 时代，技术负责人该怎么定跨端边界
+title: Shopify 用 12 周把 App 迁回原生：Agent 能写代码，跨端边界仍是产品决策
 date: 2026-11-16 10:00:00
 categories:
   - AI编程

@@ -1,5 +1,5 @@
 ---
-title: Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界
+title: Claude Ship 不是自动合并：审查、修复和审批政策是三层边界
 date: 2026-11-25 10:00:00
 categories:
   - AI编程

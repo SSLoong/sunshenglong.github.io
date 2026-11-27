@@ -1,5 +1,5 @@
 ---
-title: GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单
+title: GitHub Copilot Fusion 不是一个模型：编排、策略和账单要分开看
 date: 2026-11-23 10:00:00
 categories:
   - AI编程
