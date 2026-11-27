@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="2026年11月23日Anthropic发布Claude Ship（beta），团队容易把「Claude能审查、修复、审批」听成「Claude会自动合并」。这是错误的决策单元——技术负责人要拆开四层：Agent能力边界、仓库策略文件、GitHub分支保护规则、计费与套餐资格，才能定清楚哪些PR需要人批、哪些可以让Claude批。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界">
+<meta property="og:url" content="https://devloong.com/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="2026年11月23日Anthropic发布Claude Ship（beta），团队容易把「Claude能审查、修复、审批」听成「Claude会自动合并」。这是错误的决策单元——技术负责人要拆开四层：Agent能力边界、仓库策略文件、GitHub分支保护规则、计费与套餐资格，才能定清楚哪些PR需要人批、哪些可以让Claude批。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/claude-ship-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/claude-ship-four-layers.jpg">
+<meta property="og:image" content="https://devloong.com/images/claude-ship-rollout.jpg">
+<meta property="article:published_time" content="2026-11-25T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-27T05:54:12.777Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Claude Approvals">
+<meta property="article:tag" content="Claude Ship">
+<meta property="article:tag" content="Code Review">
+<meta property="article:tag" content="GitHub">
+<meta property="article:tag" content="PR Steward">
+<meta property="article:tag" content="技术负责人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/claude-ship-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/","path":"2026/11/25/Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界/","title":"Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E6%8B%86%E6%B8%85%E5%9B%9B%E5%B1%82%EF%BC%9AAgent-%E8%83%BD%E5%8A%9B%E3%80%81%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6%E3%80%81GitHub-%E8%A7%84%E5%88%99%E3%80%81%E8%AE%A1%E8%B4%B9%E4%B8%8D%E8%83%BD%E6%B7%B7%E4%B8%BA%E4%B8%80%E8%B0%88"><span class="nav-number">1.</span> <span class="nav-text">先拆清四层：Agent 能力、策略文件、GitHub 规则、计费不能混为一谈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9AAgent-%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C%EF%BC%88%E5%AE%98%E6%96%B9%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%88%91%E4%BB%AC%E7%9A%84%E5%AE%9E%E6%B5%8B%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">第一层：Agent 能力边界（官方设计目标，不是我们的实测结论）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9A%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6-%E2%89%A0-Agent-%E8%83%BD%E5%8A%9B"><span class="nav-number">1.2.</span> <span class="nav-text">第二层：策略文件 ≠ Agent 能力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9AGitHub-%E8%A7%84%E5%88%99-%E2%89%A0-%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">第三层：GitHub 规则 ≠ 策略文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9A%E5%A5%97%E9%A4%90%E3%80%81%E8%B5%84%E6%A0%BC%E4%B8%8E%E8%AE%A1%E8%B4%B9%EF%BC%88%E5%BF%85%E9%A1%BB%E7%94%A8%E5%AE%98%E6%96%B9%E6%9C%80%E6%96%B0%E9%A1%B5%EF%BC%8C%E4%B8%8D%E8%A6%81%E6%B7%B7%E7%94%A8%E8%BF%87%E6%97%B6%E5%8F%A3%E5%BE%84%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">第四层：套餐、资格与计费（必须用官方最新页，不要混用过时口径）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B5%84%E6%A0%BC"><span class="nav-number">1.4.1.</span> <span class="nav-text">资格</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E8%B4%B9%EF%BC%88%E5%BF%85%E9%A1%BB%E4%B8%A5%E6%A0%BC%E6%8C%89%E5%AE%98%E6%96%B9%EF%BC%8C%E7%A6%81%E6%AD%A2%E7%BC%96%E5%8D%95%E4%BB%B7%E6%88%96%E5%A5%97%E9%A4%90%E5%AF%B9%E7%85%A7%E8%A1%A8%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">计费（必须严格按官方，禁止编单价或套餐对照表）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E4%B8%AA-agent-%E5%90%84%E5%81%9A%E4%BB%80%E4%B9%88%E3%80%81%E6%98%8E%E7%A1%AE-Steward-%E4%B8%8D%E8%B4%9F%E8%B4%A3%E6%89%B9%E5%87%86%E5%92%8C%E5%90%88%E5%B9%B6"><span class="nav-number">2.</span> <span class="nav-text">三个 agent 各做什么、明确 Steward 不负责批准和合并</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Code-Review%EF%BC%9A%E6%89%BE%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">Code Review：找问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PR-Steward%EF%BC%9A%E6%8E%A8%E4%BF%AE%E5%A4%8D"><span class="nav-number">2.2.</span> <span class="nav-text">PR Steward：推修复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Claude-Approvals%EF%BC%9A%E5%BA%94%E7%94%A8%E7%AD%96%E7%95%A5"><span class="nav-number">2.3.</span> <span class="nav-text">Claude Approvals：应用策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%84%E7%BB%87%E7%BA%A7-Claude-Ship-vs-%E4%B8%AA%E4%BA%BA-ship%E3%80%81-steward%EF%BC%8C%E4%B8%8D%E8%A6%81%E6%B7%B7"><span class="nav-number">3.</span> <span class="nav-text">组织级 Claude Ship vs 个人 &#x2F;ship、&#x2F;steward，不要混</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#For-admins-and-engineering-leaders-%E7%BB%84%E7%BB%87%E7%BA%A7-Claude-Ship"><span class="nav-number">3.1.</span> <span class="nav-text">For admins and engineering leaders: 组织级 Claude Ship</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#For-developers-ship-%E4%B8%8E-steward-%E5%91%BD%E4%BB%A4"><span class="nav-number">3.2.</span> <span class="nav-text">For developers: &#x2F;ship 与 &#x2F;steward 命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A1%E6%89%B9%E7%AD%96%E7%95%A5%E4%B8%8E%E3%80%8C%E6%97%A0%E4%BA%BA%E5%AE%A1%E9%98%85%E4%B9%9F%E5%8F%AF%E8%83%BD%E5%90%88%E5%B9%B6%E3%80%8D%E7%9A%84%E5%AE%98%E6%96%B9%E8%AD%A6%E5%91%8A"><span class="nav-number">4.</span> <span class="nav-text">审批策略与「无人审阅也可能合并」的官方警告</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%94%9F%E6%95%88"><span class="nav-number">4.1.</span> <span class="nav-text">策略文件什么时候生效</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%81%E8%83%BD%E6%89%93%E5%BC%80"><span class="nav-number">4.2.</span> <span class="nav-text">谁能打开</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#observe-vs-enforce"><span class="nav-number">4.3.</span> <span class="nav-text">observe vs enforce</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E6%A0%87%E9%A2%98%E4%BE%8B%E5%AD%90"><span class="nav-number">4.4.</span> <span class="nav-text">检查标题例子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#github-com-%E4%B8%8A%E7%94%B1-Claude-GitHub-App-%E6%8A%A5%E5%91%8A-check-%E6%97%B6%EF%BC%8C%E6%89%B9%E5%87%86%E6%9D%A5%E8%87%AA-claude-bot-%EF%BC%9B%E8%8B%A5-PR-%E6%98%AF-claude-bot-%E5%BC%80%E7%9A%84%EF%BC%8C%E6%89%B9%E5%87%86%E6%9D%A5%E8%87%AA-claude-approvals-bot-%EF%BC%88%E9%9C%80%E5%AE%89%E8%A3%85-Claude-Approvals-GitHub-App%EF%BC%89"><span class="nav-number">4.5.</span> <span class="nav-text">github.com 上由 Claude GitHub App 报告 check 时，批准来自 claude[bot]；若 PR 是 claude[bot] 开的，批准来自 claude-approvals[bot]（需安装 Claude Approvals GitHub App）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%98%8E%E7%A1%AE%E8%AD%A6%E5%91%8A%E3%80%8CMerges-without-human-review%E3%80%8D"><span class="nav-number">4.6.</span> <span class="nav-text">官方明确警告「Merges without human review」</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6%E5%8F%AF%E8%83%BD%E6%94%B9%E5%8F%98%E8%87%AA%E5%8A%A8-Code-Review"><span class="nav-number">4.7.</span> <span class="nav-text">加入策略文件可能改变自动 Code Review</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E7%94%A8%E5%89%8D%E5%AE%98%E6%96%B9%E8%A6%81%E6%B1%82"><span class="nav-number">4.8.</span> <span class="nav-text">启用前官方要求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E8%90%BD%E5%9C%B0%E9%A1%BA%E5%BA%8F%EF%BC%9A%E4%B8%80%E4%B8%AA%E4%BB%93%E5%BA%93%E3%80%81%E5%85%88-Code-Review-%E5%B9%B6%E8%AE%BE%E8%8A%B1%E8%B4%B9%E4%B8%8A%E9%99%90%E3%80%81Steward-%E5%85%88-Manual%E3%80%81Approvals-%E5%85%88-observe%EF%BC%8C%E6%9C%80%E5%90%8E%E6%89%8D-required-check-enforce"><span class="nav-number">5.</span> <span class="nav-text">推荐落地顺序：一个仓库、先 Code Review 并设花费上限、Steward 先 Manual、Approvals 先 observe，最后才 required check + enforce</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E5%BB%BA%E8%AE%AE%E5%90%AF%E7%94%A8%E9%A1%BA%E5%BA%8F%EF%BC%88%E6%96%87%E6%A1%A3%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">官方建议启用顺序（文档）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E4%BD%A0%E5%B7%B2%E7%BB%8F%E7%94%A8-Code-Review"><span class="nav-number">5.2.</span> <span class="nav-text">如果你已经用 Code Review</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E6%8E%89%E9%A1%BA%E5%BA%8F"><span class="nav-number">5.3.</span> <span class="nav-text">关掉顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%AD%A5%E9%AA%A4%EF%BC%88%E5%9F%BA%E4%BA%8E%E5%AE%98%E6%96%B9%E5%BB%BA%E8%AE%AE%EF%BC%8C%E6%88%91%E5%8A%A0%E5%B7%A5%E4%B8%BA%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%B8%85%E5%8D%95%EF%BC%89"><span class="nav-number">5.4.</span> <span class="nav-text">实际可执行步骤（基于官方建议，我加工为可执行清单）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E9%80%89%E4%B8%80%E4%B8%AA%E4%BB%93%E5%BA%93-pilot"><span class="nav-number">5.4.1.</span> <span class="nav-text">1. 选一个仓库 pilot</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%85%88-Code-Review%EF%BC%8C%E8%AE%BE%E8%8A%B1%E8%B4%B9%E4%B8%8A%E9%99%90"><span class="nav-number">5.4.2.</span> <span class="nav-text">2. 先 Code Review，设花费上限</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%8A%A0-PR-Steward%EF%BC%8C%E5%85%88-Manual"><span class="nav-number">5.4.3.</span> <span class="nav-text">3. 加 PR Steward，先 Manual</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E5%8A%A0-Approvals%EF%BC%8C%E5%85%88-observe"><span class="nav-number">5.4.4.</span> <span class="nav-text">4. 加 Approvals，先 observe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-%E6%9C%80%E5%90%8E%E6%89%8D-enforce-required-check"><span class="nav-number">5.4.5.</span> <span class="nav-text">5. 最后才 enforce + required check</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-%E5%85%B3%E6%8E%89%E6%97%B6%E9%A1%BA%E5%BA%8F%E7%9B%B8%E5%8F%8D"><span class="nav-number">5.4.6.</span> <span class="nav-text">6. 关掉时顺序相反</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E5%8F%AF%E6%89%A7%E8%A1%8C%E7%9A%84%E8%BE%B9%E7%95%8C%E6%B8%85%E5%8D%95"><span class="nav-number">6.</span> <span class="nav-text">技术负责人可执行的边界清单</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%85%88%E7%A1%AE%E8%AE%A4%E8%B5%84%E6%A0%BC%E4%B8%8E%E8%AE%A1%E8%B4%B9"><span class="nav-number">6.1.</span> <span class="nav-text">1. 先确认资格与计费</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E9%80%89%E4%B8%80%E4%B8%AA%E4%BB%93%E5%BA%93-pilot%EF%BC%8C%E8%AE%BE%E8%8A%B1%E8%B4%B9%E4%B8%8A%E9%99%90"><span class="nav-number">6.2.</span> <span class="nav-text">2. 选一个仓库 pilot，设花费上限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-GitHub-%E8%A7%84%E5%88%99%E7%9B%98%E7%82%B9%EF%BC%9A%E5%88%86%E6%94%AF%E4%BF%9D%E6%8A%A4%E3%80%81required-checks%E3%80%81auto-merge%E3%80%81merge-queue"><span class="nav-number">6.3.</span> <span class="nav-text">3. GitHub 规则盘点：分支保护、required checks、auto-merge、merge queue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E7%AD%96%E7%95%A5%E6%96%87%E4%BB%B6%E8%BE%B9%E7%95%8C%EF%BC%9A%E8%B0%81%E8%83%BD%E6%89%B9%E3%80%81%E8%B0%81%E5%BF%85%E9%A1%BB%E6%89%B9%E3%80%81Claude-%E8%83%BD%E6%89%B9%E5%93%AA%E4%BA%9B"><span class="nav-number">6.4.</span> <span class="nav-text">4. 策略文件边界：谁能批、谁必须批、Claude 能批哪些</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-PR-Steward-%E8%BE%B9%E7%95%8C%EF%BC%9A%E5%85%88-Manual%EF%BC%8C%E4%BF%A1%E4%BB%BB%E5%90%8E%E5%86%8D%E9%BB%98%E8%AE%A4"><span class="nav-number">6.5.</span> <span class="nav-text">5. PR Steward 边界：先 Manual，信任后再默认</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Approvals-%E8%BE%B9%E7%95%8C%EF%BC%9A%E5%85%88-observe%EF%BC%8C%E6%9C%80%E5%90%8E%E6%89%8D-enforce-required-check"><span class="nav-number">6.6.</span> <span class="nav-text">6. Approvals 边界：先 observe，最后才 enforce + required check</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E6%98%8E%E7%A1%AE%E8%AD%A6%E5%91%8A%E5%9B%A2%E9%98%9F%EF%BC%9A%E8%BF%99%E4%BA%9B%E7%BB%84%E5%90%88%E5%8F%AF%E8%83%BD%E5%AF%BC%E8%87%B4%E6%97%A0%E4%BA%BA%E5%AE%A1%E9%98%85%E4%B9%9F%E8%83%BD%E5%90%88%E5%B9%B6"><span class="nav-number">6.7.</span> <span class="nav-text">7. 明确警告团队：这些组合可能导致无人审阅也能合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E7%BB%84%E7%BB%87%E7%BA%A7-Claude-Ship-vs-%E4%B8%AA%E4%BA%BA-ship%E3%80%81-steward%EF%BC%8C%E6%98%8E%E7%A1%AE%E8%AE%A1%E8%B4%B9%E5%B7%AE%E5%BC%82"><span class="nav-number">6.8.</span> <span class="nav-text">8. 组织级 Claude Ship vs 个人 &#x2F;ship、&#x2F;steward，明确计费差异</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-%E5%85%B3%E6%8E%89%E6%97%B6%E9%A1%BA%E5%BA%8F%E7%9B%B8%E5%8F%8D%EF%BC%9A%E5%85%88-Approvals%EF%BC%8C%E5%86%8D-Steward%EF%BC%8C%E6%9C%80%E5%90%8E-Code-Review"><span class="nav-number">6.9.</span> <span class="nav-text">9. 关掉时顺序相反：先 Approvals，再 Steward，最后 Code Review</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E9%AA%8C%E9%93%BE%E6%8E%A5%EF%BC%88%E5%8F%91%E5%B8%83%E5%89%8D%E8%AF%B7%E5%86%8D%E6%AC%A1%E7%A1%AE%E8%AE%A4%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">核验链接（发布前请再次确认）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">81</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界 | Loong's Blog">
+      <meta itemprop="description" content="2026年11月23日Anthropic发布Claude Ship（beta），团队容易把「Claude能审查、修复、审批」听成「Claude会自动合并」。这是错误的决策单元——技术负责人要拆开四层：Agent能力边界、仓库策略文件、GitHub分支保护规则、计费与套餐资格，才能定清楚哪些PR需要人批、哪些可以让Claude批。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-25 10:00:00" itemprop="dateCreated datePublished" datetime="2026-11-25T10:00:00+08:00">2026-11-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-11-27 13:54:12" itemprop="dateModified" datetime="2026-11-27T13:54:12+08:00">2026-11-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">2026年11月23日Anthropic发布Claude Ship（beta），团队容易把「Claude能审查、修复、审批」听成「Claude会自动合并」。这是错误的决策单元——技术负责人要拆开四层：Agent能力边界、仓库策略文件、GitHub分支保护规则、计费与套餐资格，才能定清楚哪些PR需要人批、哪些可以让Claude批。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 11 月 23 日，Anthropic 发布了 <strong>Claude Ship（beta）</strong>。官方说法是：Open a pull request and get back to building. Claude can now <strong>review pull requests, fix them, and approve the ones that a team’s policy allows</strong>。团队容易把这句话听成「Claude 会自动合并 PR」，问「我们要不要开 Claude Ship」。<strong>这是错误的决策单元。</strong></p>
+<p>真正要问的是：<strong>Code Review、PR Steward、Claude Approvals 三个 agent 各自能做什么、不能做什么；<code>.claude/approvals.yml</code> 策略文件写了什么；GitHub 分支保护规则、required checks、auto-merge、merge queue 怎么配；以及 Team vs Enterprise 的计费与资格差异。</strong> 把这些混在一起，就是把 Agent 能力、仓库策略、GitHub 规则、计费套餐搅成一锅粥，最后上线发现「开了 Claude Ship 还是要我手动批」或者「昨天 PR 没人看就合进 main 了」。</p>
+<p>本文依据截至 <strong>2026-11-25</strong> 的 Anthropic 官方公告与文档解读，<strong>不是</strong>本团队实测。我会在文末列出官方链接供核验。</p>
+<p><img src="/images/claude-ship-hero.jpg" alt="封面:Claude Ship不是自动合并开关"></p>
+<p><em>概念配图：Claude Ship 通过审查→修复→审批政策→GitHub 规则 决定能否合并，而不是一个「自动合并」开关；图中红叉表示这不是你想象的那个开关。</em></p>
+<span id="more"></span>
+
+<h2 id="先拆清四层：Agent-能力、策略文件、GitHub-规则、计费不能混为一谈"><a href="#先拆清四层：Agent-能力、策略文件、GitHub-规则、计费不能混为一谈" class="headerlink" title="先拆清四层：Agent 能力、策略文件、GitHub 规则、计费不能混为一谈"></a>先拆清四层：Agent 能力、策略文件、GitHub 规则、计费不能混为一谈</h2><p>技术负责人选型时最常见的错误，是把 <strong>Agent 能力边界</strong>、<strong>仓库策略文件</strong>、<strong>GitHub 分支保护规则</strong>、<strong>计费与套餐资格</strong> 当成一回事。Claude Ship 这次发布让这个问题更明显：同一个「Claude 能批准 PR」既是 Agent 能力（Claude Approvals 可以 post approving review），也取决于策略文件（<code>.claude/approvals.yml</code> 写不写 <code>claude: approves</code>），也取决于 GitHub 规则（分支保护是否只要求一个 approval、Claude Approvals check 是否 required），还取决于计费（Approvals 的 classifier 会按 token 计费、策略文件一上默认分支就可以开始计费）。</p>
+<p><img src="/images/claude-ship-four-layers.jpg" alt="分层:四层决策不可混为一谈"></p>
+<p><em>分层示意：选型时把 Agent 能力、策略文件、GitHub 规则、计费套餐分成四层看，同一个「Claude 能批准」可以同时出现在不同层。</em></p>
+<h3 id="第一层：Agent-能力边界（官方设计目标，不是我们的实测结论）"><a href="#第一层：Agent-能力边界（官方设计目标，不是我们的实测结论）" class="headerlink" title="第一层：Agent 能力边界（官方设计目标，不是我们的实测结论）"></a>第一层：Agent 能力边界（官方设计目标，不是我们的实测结论）</h3><p>从官方博客与文档的定位看（<a target="_blank" rel="noopener" href="https://claude.com/resources/articles/introducing-claude-ship">公告</a>、<a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/claude-ship">文档总览</a>）：</p>
+<ul>
+<li><p><strong>Code Review（已 GA）</strong>：对照代码库做深入审查，multiple lenses，adversarially verifies findings，分类后发到 PR。每仓库可选 <strong>Quick、Standard、Deep</strong> 三档。Findings ranked <strong>Important、Nit、或 Pre-existing</strong>。可用 <code>REVIEW.md</code> 调整勾什么。官方给出的 Claude Code 团队自身数据（<strong>必须标明是「Claude Code 团队、且 Claude 的审查只是更广流程中的一层」，不是通用客户效果，也不是我们实测</strong>）：merged PRs more than doubled from June to September while the share reverted fell by more than 40%。</p>
+</li>
+<li><p><strong>PR Steward（beta）</strong>：让 PR 变绿——处理失败的 CI、merge conflicts、来自 Code Review &#x2F; 其他审查工具 &#x2F; 团队成员的反馈。<strong>设计目标是不 approve、不 merge pull requests</strong>（官方原话：<strong>PR Steward is designed to leave approving and merging to your team</strong>）。文档明确写：<strong>Use branch protection to require the approvals you want</strong>。每次 push 后评论改了什么、如何 undo。开发者可用 <code>@claude</code> 指示，或 <code>@claude stop</code> 让它停下。在云端工作，不必等开发者回来。官方建议启用顺序：先 <strong>Manual</strong>（<code>@claude steward</code> &#x2F; 产品页写 Start in Manual mode），团队信任后再默认开启。<strong>PR Steward has no spend limit of its own until you set one。</strong></p>
+</li>
+<li><p><strong>Claude Approvals（public beta）</strong>：是 GitHub 上的一个 <strong>check</strong>，报告还缺谁批准。策略文件是仓库根目录<strong>默认分支</strong>上的 <strong><code>.claude/approvals.yml</code></strong>。文件一上默认分支，Approvals 就可以开始计费。策略可设置某路径需要多少人批准、Claude 可否批准、是否用 classifier &#x2F; 自然语言条件。官方比喻：<strong>like a smarter CODEOWNERS</strong>。</p>
+</li>
+</ul>
+<p><strong>重点在于</strong>：PR Steward 不是「合并 agent」，它是「修复 agent」。Claude Approvals 是「批准决策 check」，不是「自动批准机器人」——能不能批、批不批，取决于策略文件怎么写。</p>
+<h3 id="第二层：策略文件-≠-Agent-能力"><a href="#第二层：策略文件-≠-Agent-能力" class="headerlink" title="第二层：策略文件 ≠ Agent 能力"></a>第二层：策略文件 ≠ Agent 能力</h3><p><code>.claude/approvals.yml</code> 是策略文件，不是 Agent 自己的能力。官方文档给了一个示例（可引用，不要改写成不存在的字段）：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># .claude/approvals.yml</span></span><br><span class="line"><span class="attr">version:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">mode:</span> <span class="string">observe</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">purpose:</span> <span class="string">&quot;A change takes two people, and Claude doesn&#x27;t approve.&quot;</span></span><br><span class="line">    <span class="attr">paths:</span> [<span class="string">&quot;**&quot;</span>]</span><br><span class="line">    <span class="attr">verdict:</span> &#123; <span class="attr">claude:</span> <span class="string">comments</span>, <span class="attr">seats:</span> <span class="number">2</span> &#125;</span><br><span class="line">    <span class="attr">advisory:</span> [<span class="string">claude/code_review</span>]</span><br></pre></td></tr></table></figure>
+
+<p>关键字段：</p>
+<ul>
+<li><strong><code>mode: observe</code></strong>：先看策略会如何裁决，通常 check 算通过，不阻断合并。官方对大多数客户建议<strong>先 observe-only</strong>，建立信心后再把 Claude Approvals 设为 required check，并 <strong>enforce</strong> 策略。</li>
+<li><strong><code>verdict: { claude: comments, seats: 2 }</code></strong>：Claude 只 comments，不批准；需要两个人（author 可以占一个 seat）。</li>
+<li><strong><code>advisory: [claude/code_review]</code></strong>：在这条规则覆盖的改动上跑 Code Review。</li>
+</ul>
+<p><strong>官方还有两个 starter 策略</strong>（必须写对语义，不要编第三套官方模板）：</p>
+<p><strong>A) Let Claude approve when Code Review passes</strong>：Code Review 通过后通常只需 author，但对 <code>.claude/</code> 下的改动仍要两个人。</p>
+<p><strong>B) Keep two people on each change</strong>：通常还要 author 之外的一个人，Claude 只 comments。</p>
+<p><strong>重点</strong>：策略文件不在，Claude Approvals 不运行；策略文件在，但 <code>claude: comments</code>，Claude 就不批准。不要把「策略默认不批准」写成「Claude Approvals 不能批准」。</p>
+<h3 id="第三层：GitHub-规则-≠-策略文件"><a href="#第三层：GitHub-规则-≠-策略文件" class="headerlink" title="第三层：GitHub 规则 ≠ 策略文件"></a>第三层：GitHub 规则 ≠ 策略文件</h3><p>即使策略文件写了 <code>claude: approves</code>，能不能真的让 PR 合并，还取决于 <strong>GitHub 分支保护规则、required checks、auto-merge、merge queue</strong>。官方文档总览有一句非常明确的话：<strong>Your settings and GitHub branch rules determine what merges.</strong></p>
+<p>官方还明确警告 <strong>「Merges without human review」</strong>（文档总览与产品 FAQ 都有），我必须单独写清楚，且逐条对齐文档，不要发挥：</p>
+<ol>
+<li><strong>check 不是 required</strong>：Claude Approvals 只有在你把它设为 GitHub required check 时才阻断合并，而且 observe mode 下通常不阻断。</li>
+<li><strong>策略不再要其他人</strong>：author 可以占一个 seat；<code>seats: 1</code> 时可以没有第二个人看；<code>seats: 0</code> 时，机器人开的 PR 可以在没有人看过的情况下合并。</li>
+<li><strong>GitHub 把 Claude 的批准算进去</strong>：若 GitHub 分支规则只要求一个 approval，Claude 的 approving review 可以成为那一个 approval。</li>
+<li><strong><code>claude: approves</code> 本身不会启动 Code Review</strong>，所以 Claude 可能批准一个谁都没审查过的改动。若要先审查，应让 Claude 只在 Code Review 通过时批准。</li>
+<li><strong>文档总览还有一句</strong>：<strong>If you use GitHub auto-merge or a merge queue with a policy that doesn’t require a person’s approval, a change can merge without anyone acting.</strong></li>
+</ol>
+<p><strong>也就是说</strong>：如果你的 GitHub 分支保护只要求一个 approval，策略文件写了 <code>claude: approves</code>，GitHub 把 Claude 的 approving review 算作那一个 approval，并且你开了 GitHub auto-merge，那么 PR 可以在没有人看过的情况下合并。这不是 Claude Ship 的「能力问题」，而是你的 <strong>GitHub 规则 + 策略文件 + auto-merge 配置组合出来的风险</strong>。</p>
+<h3 id="第四层：套餐、资格与计费（必须用官方最新页，不要混用过时口径）"><a href="#第四层：套餐、资格与计费（必须用官方最新页，不要混用过时口径）" class="headerlink" title="第四层：套餐、资格与计费（必须用官方最新页，不要混用过时口径）"></a>第四层：套餐、资格与计费（必须用官方最新页，不要混用过时口径）</h3><h4 id="资格"><a href="#资格" class="headerlink" title="资格"></a>资格</h4><ul>
+<li><strong>Team 和 Enterprise</strong>，面向 GitHub 上的仓库（文档写 <strong>works on github.com, including GitHub Enterprise Cloud</strong>）。</li>
+<li><strong>不可用</strong>：Zero Data Retention、HIPAA configuration、customer-managed encryption keys (CMEK)。</li>
+<li><strong>Approvals 额外限制</strong>（文档）：<strong>Can’t start Approvals with FERPA or Access Transparency settings</strong>。</li>
+<li>文档还写：<strong>A private repository also needs a paid GitHub plan</strong>（才能把 Claude Approvals check 设为 required）。写的时候要跟「Claude 计划」分开，不要混成同一个付费条件。</li>
+</ul>
+<h4 id="计费（必须严格按官方，禁止编单价或套餐对照表）"><a href="#计费（必须严格按官方，禁止编单价或套餐对照表）" class="headerlink" title="计费（必须严格按官方，禁止编单价或套餐对照表）"></a>计费（必须严格按官方，禁止编单价或套餐对照表）</h4><p>官方说法（公告 + 产品 FAQ + 文档，我已再核对 2026-11-25）：</p>
+<ul>
+<li><strong>Claude Ship usage is billed on tokens</strong>，打开后会增加组织成本。金额取决于覆盖的 PR 数量和大小、review level、审查运行频率、PR Steward 做了多少工作。</li>
+<li>各 agent 通过组织的 <strong>usage credits</strong> 按 token 计费，<strong>separate from your plan’s included usage</strong>。</li>
+<li><strong>Admins can set spend limits for Code Review and PR Steward</strong>。</li>
+<li><strong>Claude Approvals has no base charge</strong>，但 classifiers in a policy are billed on the tokens they use，and <strong>a policy that uses Claude’s review triggers a billed Code Review, even in observe mode</strong>。</li>
+<li><strong>Running <code>/ship</code> counts as regular Claude Code usage</strong>。</li>
+<li>若在 Organization settings &gt; Usage 关闭 usage credits，已经打开的 agent 仍会继续运行并计费；要停费必须按文档关掉 Claude Ship agents。</li>
+<li>公告促销（写时必须带「Eligible」「Terms apply」，并指向官方公告，不要写成所有客户都有）：<strong>Eligible Claude Enterprise organizations can claim at least $10,000 in Claude Ship credits to use within 30 days of claiming. Claim by January 15, 2027. Terms apply.</strong></li>
+<li>文档只说 <strong>Eligible Enterprise organizations can claim promotional Claude Ship credits</strong>，细节见 credit terms。不要编谁合格、精确额度或隐藏条款。若你能找到官方 credit terms 页面就链过去；找不到就只引用公告这句话，并注明以官方条款为准。</li>
+<li><strong>不要捏造每百万 token 单价、各 review level 的固定价格、或「Team vs Enterprise 功能对照表」（官方若只有文字资格说明，就保持文字，不要做成你发明的表格）。</strong></li>
+</ul>
+<h2 id="三个-agent-各做什么、明确-Steward-不负责批准和合并"><a href="#三个-agent-各做什么、明确-Steward-不负责批准和合并" class="headerlink" title="三个 agent 各做什么、明确 Steward 不负责批准和合并"></a>三个 agent 各做什么、明确 Steward 不负责批准和合并</h2><h3 id="Code-Review：找问题"><a href="#Code-Review：找问题" class="headerlink" title="Code Review：找问题"></a>Code Review：找问题</h3><p>Code Review reads a change alongside the surrounding code. Findings arrive as inline comments on the lines concerned, ranked by severity.</p>
+<p>每仓库可选 Quick、Standard、Deep。Findings ranked Important、Nit、或 Pre-existing。可用 <code>REVIEW.md</code> 调整勾什么。</p>
+<h3 id="PR-Steward：推修复"><a href="#PR-Steward：推修复" class="headerlink" title="PR Steward：推修复"></a>PR Steward：推修复</h3><p>PR Steward works on failing checks, merge conflicts, and review comments from people and from review bots such as Code Review. It pushes commits with its fixes.</p>
+<p><strong>Steward is designed not to approve or merge pull requests.</strong> 文档明确写：<strong>Use branch protection to require the approvals you want before anything merges.</strong> 还有一句：<strong>See Limits on approvals and merges</strong>。</p>
+<p>产品页：<strong>PR Steward is designed to leave approving and merging to your team.</strong></p>
+<p><strong>也就是说</strong>：官方设计目标是让 Steward 只负责修复，不负责批准和合并。如果你的 PR 最后被 Steward 合并了，那是因为你的 GitHub 规则 + 策略文件 + auto-merge 配置允许了这件事，不是 Steward 自己的能力。</p>
+<h3 id="Claude-Approvals：应用策略"><a href="#Claude-Approvals：应用策略" class="headerlink" title="Claude Approvals：应用策略"></a>Claude Approvals：应用策略</h3><p>Claude Approvals is a check that reports who still has to approve. 策略文件是仓库根目录默认分支上的 <code>.claude/approvals.yml</code>。</p>
+<p><strong>The check blocks a merge only where you make it a required check in GitHub, and normally not in observe mode.</strong></p>
+<p>官方原话：<strong>If you use GitHub auto-merge or a merge queue with a policy that doesn’t require a person’s approval, a change can merge without anyone acting.</strong></p>
+<h2 id="组织级-Claude-Ship-vs-个人-ship、-steward，不要混"><a href="#组织级-Claude-Ship-vs-个人-ship、-steward，不要混" class="headerlink" title="组织级 Claude Ship vs 个人 /ship、/steward，不要混"></a>组织级 Claude Ship vs 个人 <code>/ship</code>、<code>/steward</code>，不要混</h2><p>官方文档有两个入口：</p>
+<h3 id="For-admins-and-engineering-leaders-组织级-Claude-Ship"><a href="#For-admins-and-engineering-leaders-组织级-Claude-Ship" class="headerlink" title="For admins and engineering leaders: 组织级 Claude Ship"></a>For admins and engineering leaders: 组织级 Claude Ship</h3><p>Turning Claude Ship on for an entire repository puts it to work across a team’s pull requests automatically, under settings and an approval policy the team controls. Developers don’t need to manually invoke the <code>/ship</code> command.</p>
+<ul>
+<li>Admins choose where it runs. An admin turns on Code Review and PR Steward for each repository. Claude Approvals starts when a connected repository has a policy file on its default branch, and an admin can turn it off.</li>
+<li>Each repository gets the settings it needs. Admins choose the review level (Quick, Standard, or Deep), choose when reviews run, and configure spend limits.</li>
+<li>Teams keep the tools they have. Claude Ship works with existing branch protection and required checks.</li>
+</ul>
+<h3 id="For-developers-ship-与-steward-命令"><a href="#For-developers-ship-与-steward-命令" class="headerlink" title="For developers: /ship 与 /steward 命令"></a>For developers: <code>/ship</code> 与 <code>/steward</code> 命令</h3><p>文档：<strong>To get a review and fixes locally, on one of your own pull requests, run <code>/ship</code> in Claude Code.</strong></p>
+<ul>
+<li><strong><code>/ship</code></strong>：若还没有 PR 就打开 GitHub PR，审查改动，处理反馈和失败检查，帮 PR 准备到可合并。官方反复写：<strong>What can merge depends on the developer’s permissions and the repository’s branch rules.</strong></li>
+<li>公告：<strong><code>/ship</code> is rolling out in Claude Code and the desktop app starting today（2026-11-23）</strong>。</li>
+<li><strong><code>/steward</code></strong>：在已打开的 PR 上跳过先审、直接开始 watch。文档明确：<strong><code>/steward</code> is separate from PR Steward, the agent that an organization sets up. Where PR Steward is already working on your pull request, no watch starts.</strong></li>
+<li><strong><code>/ship</code> 的 watch 使用开发者自己的 <code>gh</code> 和 <code>git</code> 登录，GitHub 上的操作出现在开发者名下。</strong> 这是权限&#x2F;身份问题，不要写成「组织级 Steward 会用开发者身份合并」。</li>
+<li><strong>不要把 auto mode 下列出的「Merges the base branch into yours」写成「自动合并 PR」。</strong> 那是把 base 合进功能分支以解决冲突或跟上 main，不是 merge the pull request。写之前请再打开 <a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/ship-command">&#x2F;ship 文档</a> 核对原文。</li>
+<li><strong><code>/ship</code> 在 draft PR、其他 base branch、要用仓库 PR 模板、GitHub Enterprise 或 fork 上的 PR 等情况下，文档要求先自己开 PR 再运行 <code>/ship</code>。</strong> v2.1.331 前后对「提交在默认分支」时是否自动建分支的行为有差别，若要写，必须核对 ship-command 文档，写不准就省略，不要猜版本号行为。</li>
+</ul>
+<p><strong>重点</strong>：组织级 Claude Ship 是给整个仓库开的 agents，按 organization usage credits 计费；<code>/ship</code> 和 <code>/steward</code> 是个人在 Claude Code 里跑的命令，按 regular Claude Code usage 计费。两者不是同一个东西，不要混。</p>
+<h2 id="审批策略与「无人审阅也可能合并」的官方警告"><a href="#审批策略与「无人审阅也可能合并」的官方警告" class="headerlink" title="审批策略与「无人审阅也可能合并」的官方警告"></a>审批策略与「无人审阅也可能合并」的官方警告</h2><h3 id="策略文件什么时候生效"><a href="#策略文件什么时候生效" class="headerlink" title="策略文件什么时候生效"></a>策略文件什么时候生效</h3><p>官方步骤：策略文件单独开一个 PR；等 Claude 评论 <strong>found the policy file in this change valid</strong> 再合并；然后再开一个非 draft、合入默认分支的 PR，才能看到标题以 <strong>(observe mode)</strong> 开头的 check。</p>
+<p>文件一上默认分支，Approvals 就可以开始计费。</p>
+<h3 id="谁能打开"><a href="#谁能打开" class="headerlink" title="谁能打开"></a>谁能打开</h3><p>只要有人能把策略文件 merge 进默认分支，Approvals 就可以被打开。<strong>Claude 组织 Owner 可以在组织级关掉，关掉后即使再 merge 策略文件也保持关闭。</strong></p>
+<h3 id="observe-vs-enforce"><a href="#observe-vs-enforce" class="headerlink" title="observe vs enforce"></a>observe vs enforce</h3><ul>
+<li><strong><code>mode: observe</code></strong>：先看策略会如何裁决，通常 check 算通过，不阻断合并。</li>
+<li>从 observe 切到 enforce 时：先决定哪些文件无论 Claude 怎么判断都要人批、check 要卡住哪些分支、以及何时改 GitHub required approvals 数量——官方写明：<strong>change the number of approvals that GitHub requires only after the last step of the switch</strong>。</li>
+</ul>
+<h3 id="检查标题例子"><a href="#检查标题例子" class="headerlink" title="检查标题例子"></a>检查标题例子</h3><ul>
+<li><strong>Waiting on human review from any person (1&#x2F;2)</strong></li>
+<li>以 <strong>(observe mode)</strong> 开头表示当时未强制执行。</li>
+</ul>
+<h3 id="github-com-上由-Claude-GitHub-App-报告-check-时，批准来自-claude-bot-；若-PR-是-claude-bot-开的，批准来自-claude-approvals-bot-（需安装-Claude-Approvals-GitHub-App）"><a href="#github-com-上由-Claude-GitHub-App-报告-check-时，批准来自-claude-bot-；若-PR-是-claude-bot-开的，批准来自-claude-approvals-bot-（需安装-Claude-Approvals-GitHub-App）" class="headerlink" title="github.com 上由 Claude GitHub App 报告 check 时，批准来自 claude[bot]；若 PR 是 claude[bot] 开的，批准来自 claude-approvals[bot]（需安装 Claude Approvals GitHub App）"></a>github.com 上由 Claude GitHub App 报告 check 时，批准来自 <code>claude[bot]</code>；若 PR 是 <code>claude[bot]</code> 开的，批准来自 <code>claude-approvals[bot]</code>（需安装 Claude Approvals GitHub App）</h3><p>不要把两个 bot 混为一谈。写到这一层即可，不要编安装点击路径。</p>
+<h3 id="官方明确警告「Merges-without-human-review」"><a href="#官方明确警告「Merges-without-human-review」" class="headerlink" title="官方明确警告「Merges without human review」"></a>官方明确警告「Merges without human review」</h3><p>我已经在第三层写过，这里再强调一遍：</p>
+<ol>
+<li>check 不是 required：Claude Approvals 只有在你把它设为 GitHub required check 时才阻断合并，而且 observe mode 下通常不阻断。</li>
+<li>策略不再要其他人：author 可以占一个 seat；<code>seats: 1</code> 时可以没有第二个人看；<code>seats: 0</code> 时，机器人开的 PR 可以在没有人看过的情况下合并。</li>
+<li>GitHub 把 Claude 的批准算进去：若 GitHub 分支规则只要求一个 approval，Claude 的 approving review 可以成为那一个 approval。</li>
+<li><code>claude: approves</code> 本身不会启动 Code Review，所以 Claude 可能批准一个谁都没审查过的改动。若要先审查，应让 Claude 只在 Code Review 通过时批准。</li>
+<li>文档总览还有一句：If you use GitHub auto-merge or a merge queue with a policy that doesn’t require a person’s approval, a change can merge without anyone acting.</li>
+</ol>
+<p><strong>也就是说</strong>：团队容易把「Claude 能审查、修复、审批」听成「Claude 会自动合并」。这是错误的决策单元。要拆开四层：Agent 能力边界、策略文件、GitHub 规则、计费与资格，才能定清楚哪些 PR 需要人批、哪些可以让 Claude 批。</p>
+<h3 id="加入策略文件可能改变自动-Code-Review"><a href="#加入策略文件可能改变自动-Code-Review" class="headerlink" title="加入策略文件可能改变自动 Code Review"></a>加入策略文件可能改变自动 Code Review</h3><p>一旦默认分支有策略文件（observe 或 enforced），若 PR 改动的文件都落在策略覆盖范围内，且没有规则写 <code>claude/code_review</code>，自动审查通常会停。要保留自动审查，就在规则里写上 <code>claude/code_review</code>（示例放在 <code>advisory</code>）。</p>
+<h3 id="启用前官方要求"><a href="#启用前官方要求" class="headerlink" title="启用前官方要求"></a>启用前官方要求</h3><p>强制执行页上任一 starter 策略前，需要<strong>两名有 write access 的人</strong>，因为两条策略都要求 <code>.claude/</code>（含策略文件本身）的改动要两个人。</p>
+<h2 id="推荐落地顺序：一个仓库、先-Code-Review-并设花费上限、Steward-先-Manual、Approvals-先-observe，最后才-required-check-enforce"><a href="#推荐落地顺序：一个仓库、先-Code-Review-并设花费上限、Steward-先-Manual、Approvals-先-observe，最后才-required-check-enforce" class="headerlink" title="推荐落地顺序：一个仓库、先 Code Review 并设花费上限、Steward 先 Manual、Approvals 先 observe，最后才 required check + enforce"></a>推荐落地顺序：一个仓库、先 Code Review 并设花费上限、Steward 先 Manual、Approvals 先 observe，最后才 required check + enforce</h2><p><img src="/images/claude-ship-rollout.jpg" alt="决策框架:单仓库落地顺序"></p>
+<p><em>落地顺序：先 Code Review 并设花费上限，再 Manual PR Steward，再 Approvals observe，最后才 enforce + required check；关掉顺序相反。</em></p>
+<h3 id="官方建议启用顺序（文档）"><a href="#官方建议启用顺序（文档）" class="headerlink" title="官方建议启用顺序（文档）"></a>官方建议启用顺序（文档）</h3><p>Turn on one agent at a time in one repository, in this order:</p>
+<ol>
+<li><strong>Set up Code Review</strong></li>
+<li><strong>Set up PR Steward</strong>. For the setting that chooses when PR Steward starts, begin with <strong>Manual</strong> (<code>@claude steward</code>). PR Steward has no spend limit of its own until you set one.</li>
+<li><strong>Set up Claude Approvals</strong>. A policy file in the repository starts it, so see who can turn it on. Start in <strong>observe mode</strong>, where the Claude Approvals check reports what your policy would decide. Observe mode is billed. See what Approvals costs.</li>
+</ol>
+<h3 id="如果你已经用-Code-Review"><a href="#如果你已经用-Code-Review" class="headerlink" title="如果你已经用 Code Review"></a>如果你已经用 Code Review</h3><p>Code Review’s settings moved to Organization settings &gt; Claude Ship.</p>
+<p>A Claude Approvals policy file, <code>.claude/approvals.yml</code>, changes which pull requests Code Review reviews automatically. Once the file is on the default branch, in observe mode or enforced, automatic reviews normally stop where no matching rule names <code>claude/code_review</code>. To keep them, add <code>claude/code_review</code> to a rule.</p>
+<h3 id="关掉顺序"><a href="#关掉顺序" class="headerlink" title="关掉顺序"></a>关掉顺序</h3><p>Turn off Approvals before Code Review, because a policy can start billed reviews where Code Review is off:</p>
+<ol>
+<li>Turn off Approvals</li>
+<li>Turn off PR Steward</li>
+<li>Turn off Code Review</li>
+</ol>
+<p>These steps leave the <code>/ship</code> and <code>/steward</code> commands on. See how to turn them off.</p>
+<h3 id="实际可执行步骤（基于官方建议，我加工为可执行清单）"><a href="#实际可执行步骤（基于官方建议，我加工为可执行清单）" class="headerlink" title="实际可执行步骤（基于官方建议，我加工为可执行清单）"></a>实际可执行步骤（基于官方建议，我加工为可执行清单）</h3><h4 id="1-选一个仓库-pilot"><a href="#1-选一个仓库-pilot" class="headerlink" title="1. 选一个仓库 pilot"></a>1. 选一个仓库 pilot</h4><ul>
+<li>不要一上来就全组织开。选一个风险可控、PR 频率适中的仓库。</li>
+<li>团队至少要有两名有 write access 的人（启用策略文件时需要）。</li>
+</ul>
+<h4 id="2-先-Code-Review，设花费上限"><a href="#2-先-Code-Review，设花费上限" class="headerlink" title="2. 先 Code Review，设花费上限"></a>2. 先 Code Review，设花费上限</h4><ul>
+<li>在 Organization settings &gt; Claude Ship 里打开 Code Review，选 <strong>Quick</strong> 或 <strong>Standard</strong>（不要一上来就 Deep，Deep 最贵）。</li>
+<li><strong>设月度花费上限</strong>（spend limit）——这是官方强烈建议的，不要跳过。</li>
+<li>跑一周，看平均每 PR 成本、看 findings 质量、看 Important vs Nit 比例。</li>
+<li>如果 findings 大多数是 Pre-existing（已经存在的问题），考虑调整 <code>REVIEW.md</code> 或换 review level。</li>
+</ul>
+<h4 id="3-加-PR-Steward，先-Manual"><a href="#3-加-PR-Steward，先-Manual" class="headerlink" title="3. 加 PR Steward，先 Manual"></a>3. 加 PR Steward，先 Manual</h4><ul>
+<li>打开 PR Steward，把启动设置选成 <strong>Manual</strong>（开发者评论 <code>@claude steward</code> 才启动）。</li>
+<li><strong>设花费上限</strong>（Steward has no spend limit of its own until you set one）。</li>
+<li>团队试用一周，看 Steward 推的修复是否符合预期、是否有误修、是否有不必要的 push。</li>
+<li>如果信任了，再改成默认开启。</li>
+</ul>
+<h4 id="4-加-Approvals，先-observe"><a href="#4-加-Approvals，先-observe" class="headerlink" title="4. 加 Approvals，先 observe"></a>4. 加 Approvals，先 observe</h4><ul>
+<li>写策略文件 <code>.claude/approvals.yml</code>，单独开一个 PR。</li>
+<li>等 Claude 评论 <strong>found the policy file in this change valid</strong> 再合并。</li>
+<li>合并后，再开一个非 draft、合入默认分支的 PR，看到标题以 <strong>(observe mode)</strong> 开头的 check。</li>
+<li><strong>不要立刻 enforce</strong>——先 observe 一周，看策略裁决是否符合团队预期。</li>
+<li><strong>检查 observe mode 的计费</strong>——classifier 会按 token 计费，策略用了 Claude’s review 也会触发 Code Review 计费。</li>
+</ul>
+<h4 id="5-最后才-enforce-required-check"><a href="#5-最后才-enforce-required-check" class="headerlink" title="5. 最后才 enforce + required check"></a>5. 最后才 enforce + required check</h4><ul>
+<li>从 observe 切到 enforce 时：<ul>
+<li>先决定哪些文件无论 Claude 怎么判断都要人批。</li>
+<li>决定 check 要卡住哪些分支（通常是 <code>main</code> &#x2F; <code>master</code>）。</li>
+<li><strong>最后一步</strong>才改 GitHub required approvals 数量（官方写明：change the number of approvals that GitHub requires only after the last step of the switch）。</li>
+</ul>
+</li>
+<li>把 Claude Approvals check 设为 GitHub required check（在 GitHub 分支保护里）。</li>
+<li>策略文件 <code>mode</code> 改成 <code>enforce</code>，再开一个 PR 合进去。</li>
+</ul>
+<h4 id="6-关掉时顺序相反"><a href="#6-关掉时顺序相反" class="headerlink" title="6. 关掉时顺序相反"></a>6. 关掉时顺序相反</h4><ul>
+<li>先关 Approvals（从策略文件删掉，或在组织级关掉）。</li>
+<li>再关 PR Steward。</li>
+<li>最后关 Code Review。</li>
+<li>这个顺序是因为策略文件可能在 Code Review 已关时仍触发计费审查。</li>
+</ul>
+<h2 id="技术负责人可执行的边界清单"><a href="#技术负责人可执行的边界清单" class="headerlink" title="技术负责人可执行的边界清单"></a>技术负责人可执行的边界清单</h2><p>如果你要评估 Claude Ship 进生产，建议按以下顺序落地：</p>
+<h3 id="1-先确认资格与计费"><a href="#1-先确认资格与计费" class="headerlink" title="1. 先确认资格与计费"></a>1. 先确认资格与计费</h3><ul>
+<li>检查组织是不是 <strong>Team 或 Enterprise</strong>（Claude Ship 不支持 Free &#x2F; Pro）。</li>
+<li>检查是否开了 <strong>Zero Data Retention、HIPAA、CMEK、FERPA、Access Transparency</strong>——有这些就不能用 Claude Ship（Approvals 有额外限制）。</li>
+<li>检查仓库是不是在 <strong>github.com</strong>（含 GitHub Enterprise Cloud）——其他托管平台（GitLab &#x2F; Bitbucket &#x2F; Azure DevOps）的 <code>/ship</code> watch 有限制，组织级 Claude Ship agents 目前不支持。</li>
+<li>若仓库是 private，检查是否有 <strong>paid GitHub plan</strong>（才能把 Claude Approvals check 设为 required）。</li>
+<li><strong>Enterprise 组织可以申请促销 credits</strong>（至少 $10,000，30 天内用完，2027-01-15 前申请，条款另行）——别错过这个，但别把促销额度当成稳态成本。</li>
+</ul>
+<h3 id="2-选一个仓库-pilot，设花费上限"><a href="#2-选一个仓库-pilot，设花费上限" class="headerlink" title="2. 选一个仓库 pilot，设花费上限"></a>2. 选一个仓库 pilot，设花费上限</h3><ul>
+<li>不要一上来就全组织开。选一个风险可控、PR 频率适中的仓库。</li>
+<li><strong>先开 Code Review，选 Quick 或 Standard，设月度花费上限。</strong></li>
+<li>跑一周，看平均每 PR 成本、findings 质量、Important vs Nit 比例。</li>
+</ul>
+<h3 id="3-GitHub-规则盘点：分支保护、required-checks、auto-merge、merge-queue"><a href="#3-GitHub-规则盘点：分支保护、required-checks、auto-merge、merge-queue" class="headerlink" title="3. GitHub 规则盘点：分支保护、required checks、auto-merge、merge queue"></a>3. GitHub 规则盘点：分支保护、required checks、auto-merge、merge queue</h3><ul>
+<li>列出目标仓库的 <strong>分支保护规则</strong>：哪些分支受保护、要求几个 approvals、是否要求 code owner approval。</li>
+<li>列出 <strong>required checks</strong>：哪些 CI check 是 required、是否允许 dismiss stale reviews。</li>
+<li>检查是否有人开了 <strong>GitHub auto-merge</strong> 或 <strong>merge queue</strong>——有这些的话，Claude Approvals check 通过后可能自动合并。</li>
+<li><strong>决定你的边界</strong>：哪些 PR 可以让 Claude 批、哪些必须要人批、哪些必须要 code owner 批。</li>
+</ul>
+<h3 id="4-策略文件边界：谁能批、谁必须批、Claude-能批哪些"><a href="#4-策略文件边界：谁能批、谁必须批、Claude-能批哪些" class="headerlink" title="4. 策略文件边界：谁能批、谁必须批、Claude 能批哪些"></a>4. 策略文件边界：谁能批、谁必须批、Claude 能批哪些</h3><ul>
+<li>写 <code>.claude/approvals.yml</code> 策略文件前，先列出：<ul>
+<li>哪些路径必须要人批（例如 <code>.claude/</code>、<code>deploy/</code>、<code>infra/</code>、<code>security/</code>）。</li>
+<li>哪些路径可以让 Claude 批（例如 <code>docs/</code>、<code>tests/</code>、<code>README.md</code>）。</li>
+<li><code>seats</code> 设几个（<code>seats: 2</code> 表示要两个人，author 可以占一个；<code>seats: 1</code> 表示只要一个人，可能是 author；<code>seats: 0</code> 表示机器人 PR 可以没人看）。</li>
+<li><code>claude: approves</code> 还是 <code>claude: comments</code>（approves 表示 Claude 可以批；comments 表示 Claude 只评论，不批）。</li>
+<li>是否用 <code>advisory: [claude/code_review]</code>（用了会先跑 Code Review，会计费）。</li>
+</ul>
+</li>
+<li><strong>官方两个 starter 策略</strong>：<ul>
+<li><strong>A) Let Claude approve when Code Review passes</strong>：Code Review 通过后通常只需 author，但对 <code>.claude/</code> 下的改动仍要两个人。</li>
+<li><strong>B) Keep two people on each change</strong>：通常还要 author 之外的一个人，Claude 只 comments。</li>
+</ul>
+</li>
+<li>选一个，或自己写（但别从 observe 直接跳 enforce，先 observe 一周）。</li>
+</ul>
+<h3 id="5-PR-Steward-边界：先-Manual，信任后再默认"><a href="#5-PR-Steward-边界：先-Manual，信任后再默认" class="headerlink" title="5. PR Steward 边界：先 Manual，信任后再默认"></a>5. PR Steward 边界：先 Manual，信任后再默认</h3><ul>
+<li>打开 PR Steward，把启动设置选成 <strong>Manual</strong>（<code>@claude steward</code>）。</li>
+<li><strong>设花费上限</strong>（Steward has no spend limit of its own until you set one）。</li>
+<li>团队试用一周，看 Steward 推的修复是否符合预期、是否有误修、是否有不必要的 push。</li>
+<li>如果信任了，再改成默认开启。</li>
+<li><strong>明确告诉团队</strong>：Steward 不负责批准和合并，它只负责修复。要批准和合并，要么人批，要么策略文件 + GitHub 规则允许。</li>
+</ul>
+<h3 id="6-Approvals-边界：先-observe，最后才-enforce-required-check"><a href="#6-Approvals-边界：先-observe，最后才-enforce-required-check" class="headerlink" title="6. Approvals 边界：先 observe，最后才 enforce + required check"></a>6. Approvals 边界：先 observe，最后才 enforce + required check</h3><ul>
+<li>策略文件单独开一个 PR，等 Claude 评论 valid 再合并。</li>
+<li>合并后，再开一个 PR 看 observe mode 的 check。</li>
+<li><strong>不要立刻 enforce</strong>——先 observe 一周，看策略裁决是否符合团队预期。</li>
+<li><strong>检查 observe mode 的计费</strong>——classifier 会按 token 计费，策略用了 Claude’s review 也会触发 Code Review 计费。</li>
+<li>从 observe 切到 enforce 时：<ul>
+<li>先决定哪些文件无论 Claude 怎么判断都要人批。</li>
+<li>决定 check 要卡住哪些分支（通常是 <code>main</code> &#x2F; <code>master</code>）。</li>
+<li><strong>最后一步</strong>才改 GitHub required approvals 数量。</li>
+</ul>
+</li>
+<li>把 Claude Approvals check 设为 GitHub required check。</li>
+</ul>
+<h3 id="7-明确警告团队：这些组合可能导致无人审阅也能合并"><a href="#7-明确警告团队：这些组合可能导致无人审阅也能合并" class="headerlink" title="7. 明确警告团队：这些组合可能导致无人审阅也能合并"></a>7. 明确警告团队：这些组合可能导致无人审阅也能合并</h3><p>告诉团队（尤其是有 admin 权限的人）：</p>
+<ol>
+<li>如果 GitHub 分支保护只要求一个 approval，策略文件写了 <code>claude: approves</code>，GitHub 把 Claude 的 approving review 算作那一个 approval，并且你开了 GitHub auto-merge，那么 PR 可以在没有人看过的情况下合并。</li>
+<li>如果策略文件 <code>seats: 0</code>，机器人开的 PR 可以没人看就合并。</li>
+<li>如果策略文件 <code>claude: approves</code> 但没写 <code>advisory: [claude/code_review]</code>，Claude 可能批准一个谁都没审查过的改动。</li>
+<li>如果 Claude Approvals check 不是 required，策略文件即使 enforce 也不会阻断合并。</li>
+<li>如果你用 GitHub merge queue，策略不再要人批，queue 可能自动合。</li>
+</ol>
+<p><strong>这些不是 bug，是你的配置组合。</strong> 要避免，就在策略文件、GitHub 规则、auto-merge 三个地方都检查。</p>
+<h3 id="8-组织级-Claude-Ship-vs-个人-ship、-steward，明确计费差异"><a href="#8-组织级-Claude-Ship-vs-个人-ship、-steward，明确计费差异" class="headerlink" title="8. 组织级 Claude Ship vs 个人 /ship、/steward，明确计费差异"></a>8. 组织级 Claude Ship vs 个人 <code>/ship</code>、<code>/steward</code>，明确计费差异</h3><ul>
+<li>组织级 Claude Ship（Code Review &#x2F; PR Steward &#x2F; Claude Approvals）按 <strong>organization usage credits</strong> 计费，从组织账户扣。</li>
+<li>个人 <code>/ship</code> 和 <code>/steward</code> 按 <strong>regular Claude Code usage</strong> 计费，从个人或组织的 Claude Code 用量扣。</li>
+<li>两者不是同一个东西，不要混。</li>
+<li><strong><code>/ship</code> 的 watch 使用开发者自己的 <code>gh</code> 和 <code>git</code> 登录，GitHub 上的操作出现在开发者名下。</strong> 不要把这个写成「组织级 Steward 会用开发者身份合并」。</li>
+</ul>
+<h3 id="9-关掉时顺序相反：先-Approvals，再-Steward，最后-Code-Review"><a href="#9-关掉时顺序相反：先-Approvals，再-Steward，最后-Code-Review" class="headerlink" title="9. 关掉时顺序相反：先 Approvals，再 Steward，最后 Code Review"></a>9. 关掉时顺序相反：先 Approvals，再 Steward，最后 Code Review</h3><ul>
+<li>若要关掉，顺序相反：先关 Approvals，再关 PR Steward，最后关 Code Review。</li>
+<li>这个顺序是因为策略文件可能在 Code Review 已关时仍触发计费审查。</li>
+<li>关掉组织级 agents 后，<code>/ship</code> 和 <code>/steward</code> 命令仍在，要另关（在 managed settings 里加 <code>skillOverrides</code> 或设 <code>CLAUDE_CODE_DISABLE_SHIP=1</code>）。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>Claude Ship 的核心价值在于：<strong>让 Claude 在 PR 打开后自动审查、修复、并按策略决定批准，而不是让开发者停下来手动处理每一条反馈。</strong> 但技术负责人要判断的不是「要不要开 Claude Ship」，而是 <strong>Code Review、PR Steward、Claude Approvals 三个 agent 各自能做什么、策略文件怎么写、GitHub 规则怎么配、以及计费与资格是否匹配</strong>。</p>
+<p>把这些混在一起，就是把 Agent 能力、策略文件、GitHub 规则、计费套餐搅成一锅粥，最后上线发现「开了 Claude Ship 还是要我手动批」或者「昨天 PR 没人看就合进 main 了」。<strong>官方反复强调：Your settings and GitHub branch rules determine what merges.</strong> 这不是一个「自动合并」开关，而是一套可配置的审查→修复→审批政策系统。</p>
+<p><strong>边界还得你自己钉。</strong></p>
+<h2 id="核验链接（发布前请再次确认）"><a href="#核验链接（发布前请再次确认）" class="headerlink" title="核验链接（发布前请再次确认）"></a>核验链接（发布前请再次确认）</h2><p>以下链接核对日期：<strong>2026-11-25</strong></p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://claude.com/resources/articles/introducing-claude-ship">Introducing Claude Ship（官方公告，2026-11-23）</a></li>
+<li><a target="_blank" rel="noopener" href="https://claude.com/product/claude-ship">Claude Ship 产品页</a></li>
+<li><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/claude-ship">Claude Ship 文档总览</a></li>
+<li><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/ship-command">Get a pull request ready with &#x2F;ship and &#x2F;steward</a></li>
+</ol>
+<hr>
+<p><strong>孙升隆（SSLoong）</strong>，devloong.com，技术负责人。本文依据截至 2026-11-25 的官方公告与文档解读，不是本团队实测。如官方页与本文有出入，以官方最新页为准。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/Claude-Ship/" rel="tag"># Claude Ship</a>
+              <a href="/tags/Code-Review/" rel="tag"># Code Review</a>
+              <a href="/tags/PR-Steward/" rel="tag"># PR Steward</a>
+              <a href="/tags/Claude-Approvals/" rel="tag"># Claude Approvals</a>
+              <a href="/tags/GitHub/" rel="tag"># GitHub</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/23/GitHub%20Copilot%20Fusion%20%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E7%BC%96%E6%8E%92%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%B4%A6%E5%8D%95/" rel="prev" title="GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单">
+                  <i class="fa fa-angle-left"></i> GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/11/27/Google%20AI%20Studio%20%E8%AF%B4%E8%83%BD%E4%BB%8E%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8F%91%E5%B8%83%20Android%20%E5%BA%94%E7%94%A8%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/" rel="next" title="Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界">
+                  Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"c2bd16f097153311bbeabe2a0d194091"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

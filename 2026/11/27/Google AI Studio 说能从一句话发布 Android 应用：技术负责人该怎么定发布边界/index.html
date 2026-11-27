@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="2026年11月17日Google博客称AI Studio可「publish to the Play Store in minutes」并「production-ready」，但技术负责人要判断的不是「能不能一键上架」，而是生成器能力、Firebase配额与规则、三条分发路径、以及计费与地区资格四层边界各自怎么定。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界">
+<meta property="og:url" content="https://devloong.com/2026/11/27/Google%20AI%20Studio%20%E8%AF%B4%E8%83%BD%E4%BB%8E%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8F%91%E5%B8%83%20Android%20%E5%BA%94%E7%94%A8%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="2026年11月17日Google博客称AI Studio可「publish to the Play Store in minutes」并「production-ready」，但技术负责人要判断的不是「能不能一键上架」，而是生成器能力、Firebase配额与规则、三条分发路径、以及计费与地区资格四层边界各自怎么定。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/ai-studio-android-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/ai-studio-android-layers.jpg">
+<meta property="og:image" content="https://devloong.com/images/ai-studio-android-decision.jpg">
+<meta property="article:published_time" content="2026-11-27T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-27T05:54:12.777Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Firebase">
+<meta property="article:tag" content="Google AI Studio">
+<meta property="article:tag" content="Play Store">
+<meta property="article:tag" content="发布边界">
+<meta property="article:tag" content="技术负责人">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/ai-studio-android-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/27/Google%20AI%20Studio%20%E8%AF%B4%E8%83%BD%E4%BB%8E%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8F%91%E5%B8%83%20Android%20%E5%BA%94%E7%94%A8%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/27/Google%20AI%20Studio%20%E8%AF%B4%E8%83%BD%E4%BB%8E%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8F%91%E5%B8%83%20Android%20%E5%BA%94%E7%94%A8%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/","path":"2026/11/27/Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界/","title":"Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%88%AB%E6%8A%8A%E3%80%8C%E5%8D%9A%E5%AE%A2%E8%90%A5%E9%94%80%E8%AF%AD%E3%80%8D%E5%92%8C%E3%80%8C%E4%BA%A7%E5%93%81%E6%96%87%E6%A1%A3%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C%E3%80%8D%E6%B7%B7%E5%9C%A8%E4%B8%80%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">先别把「博客营销语」和「产品文档能力边界」混在一起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9A%E7%94%9F%E6%88%90%E5%99%A8-Agent-%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C%EF%BC%88%E5%AE%98%E6%96%B9%E5%AE%9A%E4%BD%8D%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%88%91%E4%BB%AC%E7%9A%84%E5%AE%9E%E6%B5%8B%E7%BB%93%E8%AE%BA%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">第一层：生成器 &#x2F; Agent 能力边界（官方定位，不是我们的实测结论）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%B6%E6%9E%84%E9%99%90%E5%88%B6%EF%BC%88%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%EF%BC%8C%E9%9D%9E%E6%9C%AC%E6%96%87%E5%AE%9E%E6%B5%8B%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">架构限制（官方文档，非本文实测）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AF%BC%E5%87%BA%EF%BC%9A%E5%AE%98%E6%96%B9%E6%9D%A5%E6%BA%90%E5%86%B2%E7%AA%81"><span class="nav-number">2.2.</span> <span class="nav-text">导出：官方来源冲突</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9AFirebase-%E5%90%8E%E7%AB%AF%E5%BC%80%E9%80%9A%E4%B8%8E%E5%AE%89%E5%85%A8%E8%A7%84%E5%88%99%E5%AE%A1%E6%9F%A5"><span class="nav-number">3.</span> <span class="nav-text">第二层：Firebase 后端开通与安全规则审查</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E9%80%9A%E4%BB%80%E4%B9%88%EF%BC%88%E9%9C%80%E7%94%A8%E6%88%B7%E7%A1%AE%E8%AE%A4%EF%BC%8C%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">开通什么（需用户确认，不是自动）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Firestore-%E5%85%B1%E4%BA%AB%E9%85%8D%E9%A2%9D%EF%BC%9A%E3%80%8CAI-shared-quota%E3%80%8D%E7%BB%84%EF%BC%88%E5%AE%98%E6%96%B9%E8%A1%A8%EF%BC%8C%E9%A1%BB%E6%8C%89%E9%A1%B5%E9%9D%A2%E5%8E%9F%E6%96%87%E5%BC%95%E7%94%A8%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">Firestore 共享配额：「AI shared quota」组（官方表，须按页面原文引用）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Security-Rules%EF%BC%9A%E5%AE%98%E6%96%B9%E8%A6%81%E6%B1%82%E4%BA%BA%E5%B7%A5%E5%AE%A1%E6%9F%A5"><span class="nav-number">3.3.</span> <span class="nav-text">Security Rules：官方要求人工审查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E8%B4%A6%E5%8F%B7%E4%B8%8E%E6%9D%83%E9%99%90"><span class="nav-number">3.4.</span> <span class="nav-text">服务账号与权限</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9A%E4%B8%89%E6%9D%A1%E5%88%86%E5%8F%91%E8%B7%AF%E5%BE%84%EF%BC%88%E4%B8%8D%E5%8F%AF%E6%B7%B7%E6%B7%86%EF%BC%8C%E5%90%84%E6%9C%89%E8%B5%84%E6%A0%BC%E9%99%90%E5%88%B6%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">第三层：三条分发路径（不可混淆，各有资格限制）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%80%EF%BC%9A%E4%B8%AA%E4%BA%BA%E8%B5%84%E6%96%99%E5%BA%93%EF%BC%88Personal-Library%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">路径一：个人资料库（Personal Library）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E4%BA%8C%EF%BC%9A%E5%86%85%E9%83%A8%E6%B5%8B%E8%AF%95%E8%BD%A8%E9%81%93%EF%BC%88Internal-Testing-Track%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">路径二：内部测试轨道（Internal Testing Track）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E4%B8%89%EF%BC%9A%E7%94%9F%E4%BA%A7-%E5%85%AC%E5%BC%80%E5%88%86%E5%8F%91"><span class="nav-number">4.3.</span> <span class="nav-text">路径三：生产&#x2F;公开分发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%A6%E4%B8%80%E6%9D%A1%E8%B7%AF%E5%BE%84%EF%BC%9AWebUSB-ADB-%E7%9C%9F%E6%9C%BA%E5%AE%89%E8%A3%85%EF%BC%88%E4%B8%8D%E6%98%AF%E4%B8%8A%E6%9E%B6%EF%BC%89"><span class="nav-number">4.4.</span> <span class="nav-text">另一条路径：WebUSB &#x2F; ADB 真机安装（不是上架）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9A%E8%AE%A1%E8%B4%B9%E4%B8%8E%E8%B5%84%E6%A0%BC%EF%BC%88%E5%AE%98%E6%96%B9%E5%86%99%E3%80%8Cat-no-cost%E3%80%8D%E6%9C%89%E8%8C%83%E5%9B%B4%E9%99%90%E5%88%B6%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">第四层：计费与资格（官方写「at no cost」有范围限制）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%B0%E5%8C%BA%E4%B8%8E%E8%B4%A6%E5%8F%B7%E8%B5%84%E6%A0%BC%E5%86%8D%E6%A0%B8%E5%AF%B9"><span class="nav-number">5.1.</span> <span class="nav-text">地区与账号资格再核对</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E7%9A%84%E5%8F%AF%E6%89%A7%E8%A1%8C%E8%90%BD%E5%9C%B0%E5%BB%BA%E8%AE%AE"><span class="nav-number">6.</span> <span class="nav-text">给技术负责人的可执行落地建议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%83%BD%E5%8A%9B%E8%BE%B9%E7%95%8C%E7%9B%98%E7%82%B9%EF%BC%9A%E5%85%88%E5%88%97%E5%87%BA%E5%93%AA%E4%BA%9B%E9%A1%B9%E7%9B%AE%E5%8F%AF%E4%BB%A5%E8%AF%95"><span class="nav-number">6.1.</span> <span class="nav-text">1. 能力边界盘点：先列出哪些项目可以试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%AF%BC%E5%87%BA%E4%B8%8E-CI-CD-%E9%9B%86%E6%88%90%EF%BC%9A%E6%A0%B8%E5%AF%B9%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%E5%86%B2%E7%AA%81"><span class="nav-number">6.2.</span> <span class="nav-text">2. 导出与 CI&#x2F;CD 集成：核对官方文档冲突</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Firebase-%E9%85%8D%E9%A2%9D%E4%B8%8E%E8%AE%A1%E8%B4%B9%E8%A7%84%E5%88%92%EF%BC%9A%E6%B5%8B%E7%AE%97%E6%97%A5%E6%B4%BB%E4%B8%8E%E8%AF%BB%E5%86%99%E9%87%8F"><span class="nav-number">6.3.</span> <span class="nav-text">3. Firebase 配额与计费规划：测算日活与读写量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%88%86%E5%8F%91%E8%B7%AF%E5%BE%84%E9%80%89%E6%8B%A9%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%B7%B7%E6%B7%86%E4%B8%89%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="nav-number">6.4.</span> <span class="nav-text">4. 分发路径选择：不要混淆三条路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E6%9D%83%E9%99%90%E4%B8%8E%E5%90%88%E8%A7%84%E5%AE%A1%E6%9F%A5%EF%BC%9A%E7%9B%AF%E4%BD%8F%E9%AB%98%E9%A3%8E%E9%99%A9%E6%9D%83%E9%99%90%E4%B8%8E%E7%A6%81%E6%AD%A2%E7%B1%BB%E5%88%AB"><span class="nav-number">6.5.</span> <span class="nav-text">5. 权限与合规审查：盯住高风险权限与禁止类别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E7%9C%9F%E6%9C%BA%E6%B5%8B%E8%AF%95%EF%BC%9A%E6%A8%A1%E6%8B%9F%E5%99%A8%E9%99%90%E5%88%B6%E4%B8%8E%E7%A1%AC%E4%BB%B6%E7%89%B9%E6%80%A7"><span class="nav-number">6.6.</span> <span class="nav-text">6. 真机测试：模拟器限制与硬件特性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E5%88%A0%E9%99%A4%E4%B8%8E%E6%B8%85%E7%90%86%E6%B5%81%E7%A8%8B%EF%BC%9A%E6%98%8E%E7%A1%AE-Firebase-%E9%A1%B9%E7%9B%AE%E5%BD%92%E5%B1%9E"><span class="nav-number">6.7.</span> <span class="nav-text">7. 删除与清理流程：明确 Firebase 项目归属</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E8%AE%A1%E8%B4%B9%E9%A3%8E%E9%99%A9%E9%9A%94%E7%A6%BB%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%8A%8A-AI-Studio-%E9%A1%B9%E7%9B%AE%E6%8E%A5%E5%88%B0%E6%9C%AA%E9%9A%94%E7%A6%BB%E7%9A%84%E5%85%AC%E5%8F%B8-GCP-%E8%B4%A6%E5%8D%95%E4%B8%8A"><span class="nav-number">6.8.</span> <span class="nav-text">8. 计费风险隔离：不要把 AI Studio 项目接到未隔离的公司 GCP 账单上</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E9%AA%8C%E9%93%BE%E6%8E%A5%EF%BC%88%E5%8F%91%E5%B8%83%E5%89%8D%E8%AF%B7%E5%86%8D%E6%AC%A1%E7%A1%AE%E8%AE%A4%EF%BC%89"><span class="nav-number">8.</span> <span class="nav-text">核验链接（发布前请再次确认）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">81</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/27/Google%20AI%20Studio%20%E8%AF%B4%E8%83%BD%E4%BB%8E%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%8F%91%E5%B8%83%20Android%20%E5%BA%94%E7%94%A8%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界 | Loong's Blog">
+      <meta itemprop="description" content="2026年11月17日Google博客称AI Studio可「publish to the Play Store in minutes」并「production-ready」，但技术负责人要判断的不是「能不能一键上架」，而是生成器能力、Firebase配额与规则、三条分发路径、以及计费与地区资格四层边界各自怎么定。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Google AI Studio 说能从一句话发布 Android 应用：技术负责人该怎么定发布边界
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-11-27 10:00:00 / 修改时间：13:54:12" itemprop="dateCreated datePublished" datetime="2026-11-27T10:00:00+08:00">2026-11-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">2026年11月17日Google博客称AI Studio可「publish to the Play Store in minutes」并「production-ready」，但技术负责人要判断的不是「能不能一键上架」，而是生成器能力、Firebase配额与规则、三条分发路径、以及计费与地区资格四层边界各自怎么定。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 11 月 17 日，Google Developers Blog 发文宣布，Google AI Studio 可在数分钟内从一句 prompt 构建 <strong>production-ready</strong> 的 Kotlin Android 应用，并 <strong>publish to the Play Store in minutes</strong>，全程 <strong>at no cost</strong>。(<a target="_blank" rel="noopener" href="https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/">Build full-stack Android apps with Gemini in Google AI Studio</a>)</p>
+<p>但对技术负责人来说，真正该停下来看的不是「我们要不要用 AI Studio 生成 Android 应用」，而是：<strong>不要把博客营销语里的「上架 Play」当成生产发布开关。</strong> 技术负责人要分开看四层：生成器 &#x2F; Agent 能力边界、Firebase 后端开通与安全规则审查、三条完全不同的分发路径（个人资料库、内部测试、生产发布）、以及计费与地区&#x2F;账号资格限制。这些边界不钉死，协议再稳也落不了生产。</p>
+<p>本文依据截至 <strong>2026-11-27</strong> 的 Google 官方博客、AI Studio 产品文档、Firebase 文档与 Google Play 帮助中心解读，<strong>不是</strong>本团队产线实测。我会在文末列出官方链接供核验。</p>
+<p><img src="/images/ai-studio-android-hero.jpg" alt="封面:从prompt到Play有四层决策边界"></p>
+<p><em>概念配图：从 prompt 到 Play Store 不是一条直线，而是生成能力、Firebase 后端、分发路径、计费资格四层决策边界的组合。</em></p>
+<span id="more"></span>
+
+<h2 id="先别把「博客营销语」和「产品文档能力边界」混在一起"><a href="#先别把「博客营销语」和「产品文档能力边界」混在一起" class="headerlink" title="先别把「博客营销语」和「产品文档能力边界」混在一起"></a>先别把「博客营销语」和「产品文档能力边界」混在一起</h2><p>Google Developers Blog 的营销语使用 <strong>production-ready</strong>、<strong>publish to the Play Store in minutes</strong>、<strong>at no cost</strong>。但产品文档 (<a target="_blank" rel="noopener" href="https://aistudio.google.com/docs/aistudio-android">Google AI Studio - Build Android apps</a>) 和 Google Play 帮助中心 (<a target="_blank" rel="noopener" href="https://support.google.com/googleplay/answer/18936837">Create &amp; manage AI-generated personal apps on Google Play</a>) 写的是完全不同的三件事：</p>
+<ol>
+<li><strong>个人资料库（personal library）</strong>：私有、不在公开目录、不做面向公开商店的审核、免费、<strong>仅限美国</strong>、18+ 个人账号（不支持 Workspace 账号）。这是「给自己装到手机上」，不是生产发布。</li>
+<li><strong>内部测试轨道（internal testing track）</strong>：需 Google Play Developer 账号（官方写一次性 $25 注册费）、完备开发者资料；最多 100 名测试人员；AI Studio 用托管 keystore 签名。产品文档明确：<strong>Publishing is limited to the internal testing track only. Production releases must be managed directly in the Google Play Console.</strong></li>
+<li><strong>生产&#x2F;公开分发</strong>：必须在 Play Console 里走正式流程，不是 AI Studio 一键完成。</li>
+</ol>
+<p>这三条路径的合规要求、审核流程、计费模型、可见性范围完全不同。技术负责人在读博客营销语时，必须拆清楚「publish to Play Store」指的是哪一条路径——对不在美国或使用 Workspace 账号的团队，连第一条个人资料库都不可用。</p>
+<p><img src="/images/ai-studio-android-layers.jpg" alt="四层决策边界"></p>
+<p><em>分层示意：生成能力、Firebase 后端、分发路径、计费资格是四个独立决策层，不要混成一个「能不能用 AI Studio 上架生产」。</em></p>
+<h2 id="第一层：生成器-Agent-能力边界（官方定位，不是我们的实测结论）"><a href="#第一层：生成器-Agent-能力边界（官方定位，不是我们的实测结论）" class="headerlink" title="第一层：生成器 &#x2F; Agent 能力边界（官方定位，不是我们的实测结论）"></a>第一层：生成器 &#x2F; Agent 能力边界（官方定位，不是我们的实测结论）</h2><p>产品文档写明：Android 应用在 AI Studio 里是 <strong>client-side only</strong>；需要 server-side runtime 的能力（secrets management、multiplayer、Google Workspace APIs）<strong>仅适用于 web apps</strong>。(<a target="_blank" rel="noopener" href="https://aistudio.google.com/docs/aistudio-android">aistudio.google.com&#x2F;docs&#x2F;aistudio-android</a>)</p>
+<p>生成方在博客里称为 <strong>Build agent</strong>，在产品文档里称为 <strong>Antigravity Agent</strong>——两处名称都要按来源引用，不要混成一个官方专有名词而不加出处。</p>
+<h3 id="架构限制（官方文档，非本文实测）"><a href="#架构限制（官方文档，非本文实测）" class="headerlink" title="架构限制（官方文档，非本文实测）"></a>架构限制（官方文档，非本文实测）</h3><ul>
+<li><strong>单 Activity、单模块</strong>：single-activity、single-module；不支持多模块架构。</li>
+<li><strong>仅 Kotlin + Jetpack Compose</strong>：不支持 Java 或 XML layout。</li>
+<li><strong>无 NDK &#x2F; C &#x2F; C++</strong>：不支持原生代码。</li>
+<li><strong>无 Wear OS &#x2F; Android TV</strong>：只支持手机和平板。</li>
+<li><strong>模拟器限制</strong>：无相机&#x2F;NFC&#x2F;蓝牙，GPS 为模拟，Google Play 服务（含 Google Sign-In、Maps）在模拟器不可用、需真机。</li>
+</ul>
+<p>这些限制意味着：你不能把需要多模块分层架构、或需要原生 C&#x2F;C++ 加密库、或需要 Wear OS 表盘的项目交给 AI Studio 生成。技术负责人要做的第一个判断是：<strong>列出你的 Android 项目依赖哪些能力，逐条核对是否在上述限制范围内。</strong></p>
+<h3 id="导出：官方来源冲突"><a href="#导出：官方来源冲突" class="headerlink" title="导出：官方来源冲突"></a>导出：官方来源冲突</h3><p>这是官方文档内部冲突的一个例子：</p>
+<ul>
+<li>产品文档 (<a target="_blank" rel="noopener" href="https://aistudio.google.com/docs/aistudio-android">aistudio.google.com&#x2F;docs&#x2F;aistudio-android</a>) 明确写：<strong>ZIP download only. GitHub export is not yet available for Android projects.</strong></li>
+<li>但 Learn 页 FAQ (<a target="_blank" rel="noopener" href="https://aistudio.google.com/learn/build-android-apps">aistudio.google.com&#x2F;learn&#x2F;build-android-apps</a>) 却写可以 <strong>sync your app with GitHub</strong>。</li>
+</ul>
+<p>这是官方来源冲突。<strong>正文必须点出冲突，建议读者以当前产品 UI 和产品文档页为准，不要自行裁定「其实已经支持」。</strong> 如果团队的 CI&#x2F;CD 流程强依赖 GitHub 集成，那么在官方解决这个文档冲突之前，要么接受 ZIP 导出手动推 GitHub，要么等官方明确支持。</p>
+<h2 id="第二层：Firebase-后端开通与安全规则审查"><a href="#第二层：Firebase-后端开通与安全规则审查" class="headerlink" title="第二层：Firebase 后端开通与安全规则审查"></a>第二层：Firebase 后端开通与安全规则审查</h2><p>AI Studio 可以自动开通 Firebase 后端，但这不是自动保护——技术负责人要盯住三件事：<strong>开通了什么、配额怎么算、规则谁负责审。</strong></p>
+<h3 id="开通什么（需用户确认，不是自动）"><a href="#开通什么（需用户确认，不是自动）" class="headerlink" title="开通什么（需用户确认，不是自动）"></a>开通什么（需用户确认，不是自动）</h3><p>当你在 AI Studio 中描述需要数据持久化、用户登录或 AI 特性的应用时，Agent 会<strong>主动检测</strong>这些需求并弹出设置卡片。<strong>只有用户在卡片上点击 Enable Firebase 才会开通</strong>，不是自动开通。(<a target="_blank" rel="noopener" href="https://firebase.google.com/docs/ai-assistance/ai-studio-integration">Firebase docs - Add Firebase to your Google AI Studio app</a>)</p>
+<p>可开通的服务包括：</p>
+<ul>
+<li><strong>Cloud Firestore</strong>：NoSQL 云数据库，包含自动生成的 Security Rules (<code>firestore.rules</code>)。</li>
+<li><strong>Firebase Authentication</strong>：Google Sign-In 流程。</li>
+<li><strong>Firebase AI Logic + App Check</strong>：Android 上调用 Gemini 模型时，不用在 APK 里硬编码 Gemini API key。App Check 验证请求来自真实应用。</li>
+</ul>
+<p>调试&#x2F;模拟器&#x2F;USB 安装用 AI Studio 托管的 <strong>App Check debug token</strong>；Play 发布包自动切到 <strong>reCAPTCHA Enterprise</strong>（官方也称 <strong>Google Fraud Defense, formerly reCAPTCHA Enterprise</strong>——按你复核到的现行名称写，并注明来源）。</p>
+<h3 id="Firestore-共享配额：「AI-shared-quota」组（官方表，须按页面原文引用）"><a href="#Firestore-共享配额：「AI-shared-quota」组（官方表，须按页面原文引用）" class="headerlink" title="Firestore 共享配额：「AI shared quota」组（官方表，须按页面原文引用）"></a>Firestore 共享配额：「AI shared quota」组（官方表，须按页面原文引用）</h3><p>Firebase 文档明确写明：所有 AI Studio 生成的 Cloud Firestore 数据库被放在同一个 <strong>「AI shared quota」组</strong>，共享以下限额 (<a target="_blank" rel="noopener" href="https://firebase.google.com/docs/ai-assistance/ai-studio-integration">Firebase docs</a>)：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>配额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stored data</td>
+<td>1 GiB total</td>
+</tr>
+<tr>
+<td>Network egress</td>
+<td>10 GiB per month</td>
+</tr>
+<tr>
+<td>Write units</td>
+<td>40,000 writes&#x2F;day</td>
+</tr>
+<tr>
+<td>Read units</td>
+<td>50,000 reads&#x2F;day</td>
+</tr>
+<tr>
+<td>Real-time update units</td>
+<td>50,000 updates&#x2F;day</td>
+</tr>
+</tbody></table>
+<p><strong>触达日限额后，整组暂停，约太平洋时间午夜恢复。</strong> 文档还写明：<strong>Starter Tier is not available for Android apps.</strong></p>
+<p>如果团队要升到 Blaze 付费计划，官方流程是：</p>
+<ol>
+<li>在 AI Studio 或 Firebase 控制台添加 billing（开通计费在 AI Studio 里是 <strong>Public Preview</strong>）。</li>
+<li><strong>重点</strong>：加 billing 升到 Blaze <strong>不会自动</strong>取消共享配额，必须在 Firebase 控制台对库点 <strong>Upgrade database</strong>。在 AI Studio 里开通计费会把关联账单账户升级为付费账户，可能让同一账单下其他项目也开始按量计费——这是技术负责人必须盯的风险。</li>
+</ol>
+<p>技术负责人要做的第二个判断是：<strong>如果日活超过 50,000 reads&#x2F;day 或 40,000 writes&#x2F;day，就会触达限额，整组暂停。测算你的应用每日读写量，提前决定要不要升 Blaze，以及要不要把 AI Studio 项目接到隔离的 GCP 账单账户上。</strong></p>
+<h3 id="Security-Rules：官方要求人工审查"><a href="#Security-Rules：官方要求人工审查" class="headerlink" title="Security Rules：官方要求人工审查"></a>Security Rules：官方要求人工审查</h3><p>Firebase 文档明确写明 (<a target="_blank" rel="noopener" href="https://firebase.google.com/docs/ai-assistance/ai-studio-integration">Firebase docs</a>)：</p>
+<blockquote>
+<p><strong>Generative AI can make mistakes. Always check its changes or output before deploying to production.</strong></p>
+</blockquote>
+<blockquote>
+<p><strong>Google and Firebase are not liable for any security vulnerabilities in AI-generated Security Rules. It’s your responsibility to review and test the generated Security Rules before deploying them to production.</strong></p>
+</blockquote>
+<p>另一个要注意的点：<strong>若只在 Firebase 控制台改规则，随后 AI Studio 迭代可能覆盖。</strong> 官方建议用 AI Studio Agent 调整 Security Rules，以确保改动与应用逻辑对齐。</p>
+<p>技术负责人要做的第三个判断是：<strong>上线前人工审查 Security Rules，明确谁负责审、审到什么粒度、以及在 Firebase 控制台手改规则后如何避免被 AI Studio 下次迭代覆盖。</strong></p>
+<h3 id="服务账号与权限"><a href="#服务账号与权限" class="headerlink" title="服务账号与权限"></a>服务账号与权限</h3><p>选用已有 GCP 项目时，AI Studio 会创建服务账号 <code>ais-sandbox@PROJECT_ID.iam.gserviceaccount.com</code>（请按官方文档确认准确邮箱格式），以允许 AI Studio 管理端访问。</p>
+<p><strong>删除 AI Studio 应用不会自动删除 Firebase 项目或数据。</strong> Agent 不能直接增删库里的数据，但会生成可执行这些操作的应用代码。</p>
+<p>技术负责人要做的第四个判断是：<strong>决定要不要让 AI Studio 创建新 Firebase 项目，还是接到现有项目上。如果接到现有项目，要核对服务账号权限范围，以及删除 AI Studio 应用后的清理流程。</strong></p>
+<h2 id="第三层：三条分发路径（不可混淆，各有资格限制）"><a href="#第三层：三条分发路径（不可混淆，各有资格限制）" class="headerlink" title="第三层：三条分发路径（不可混淆，各有资格限制）"></a>第三层：三条分发路径（不可混淆，各有资格限制）</h2><p>这是技术负责人最容易踩坑的地方：博客说「publish to the Play Store」，但实际有三条完全不同的路径，各自的合规要求、审核流程、计费、可见性范围、地区与账号资格限制都不一样。</p>
+<p><img src="/images/ai-studio-android-decision.jpg" alt="三条分发路径"></p>
+<p><em>决策框架：个人资料库、内部测试、生产发布是三条完全不同的路径，不要混成一条「上架」。</em></p>
+<h3 id="路径一：个人资料库（Personal-Library）"><a href="#路径一：个人资料库（Personal-Library）" class="headerlink" title="路径一：个人资料库（Personal Library）"></a>路径一：个人资料库（Personal Library）</h3><p>Google Play 帮助中心 (<a target="_blank" rel="noopener" href="https://support.google.com/googleplay/answer/18936837">Create &amp; manage AI-generated personal apps on Google Play</a>) 明确写明：</p>
+<p><strong>资格要求</strong>：</p>
+<ul>
+<li><strong>位于美国</strong>（Be located in the United States）。</li>
+<li><strong>18+ 已年龄验证的个人 Google 账号</strong>（Have an 18+ age-verified personal Google Account）。</li>
+<li><strong>不支持 Workspace &#x2F; 工作或学校账号、不支持 Family Link</strong>（Work or school (Google Workspace) accounts and supervised accounts (Family Link) are not supported）。</li>
+<li><strong>Play Store app 53.5+</strong>。</li>
+</ul>
+<p><strong>特性</strong>：</p>
+<ul>
+<li><strong>私有、不在公开目录</strong>（Private to you &#x2F; not available in Play’s public store catalog）。</li>
+<li><strong>不做面向公开商店的审核</strong>（Not reviewed by Play for the public Play Store catalog）。</li>
+<li><strong>免费</strong>（no cost）。</li>
+<li><strong>不能含广告变现</strong>（No Ads: AI-generated personal apps cannot include ad monetization or ad SDKs）。</li>
+<li><strong>禁止高风险权限</strong>：无障碍&#x2F;SMS&#x2F;通话记录&#x2F;安装包&#x2F;通知监听等（Restricted Android permissions: AI-generated personal apps cannot request high-risk permissions, including Accessibility, SMS, Call Log, Install Packages, and Notification Listener）。</li>
+<li><strong>禁止金融&#x2F;加密货币、真钱赌博、政府服务等类别</strong>（Prohibited categories: Financial services or cryptocurrency apps, real-money gambling apps, and government services apps are not permitted）。</li>
+</ul>
+<p>这是「给自己装到手机上」，不是生产发布。<strong>对不在美国或使用 Workspace 账号的团队，不能把这条路径写成默认可用。</strong></p>
+<h3 id="路径二：内部测试轨道（Internal-Testing-Track）"><a href="#路径二：内部测试轨道（Internal-Testing-Track）" class="headerlink" title="路径二：内部测试轨道（Internal Testing Track）"></a>路径二：内部测试轨道（Internal Testing Track）</h3><p>产品文档 (<a target="_blank" rel="noopener" href="https://aistudio.google.com/docs/aistudio-android">aistudio.google.com&#x2F;docs&#x2F;aistudio-android</a>) 写明：</p>
+<ul>
+<li><strong>需 Google Play Developer 账号</strong>（官方写一次性 $25 注册费）。</li>
+<li><strong>完备开发者资料</strong>。</li>
+<li><strong>最多 100 名测试人员</strong>。</li>
+<li><strong>AI Studio 用托管 keystore 签名</strong>。</li>
+<li><strong>文档明确</strong>：<strong>Publishing is limited to the internal testing track only. Production releases must be managed directly in the Google Play Console.</strong></li>
+</ul>
+<p>这是用于团队内部测试或小范围 alpha 测试，不是公开发布。测试人员可以通过链接加入，但应用仍不在公开目录里。</p>
+<h3 id="路径三：生产-公开分发"><a href="#路径三：生产-公开分发" class="headerlink" title="路径三：生产&#x2F;公开分发"></a>路径三：生产&#x2F;公开分发</h3><p>产品文档已经明确写：<strong>Production releases must be managed directly in the Google Play Console.</strong></p>
+<p>这意味着：AI Studio 生成的应用可以作为起点，但要走生产发布流程，必须：</p>
+<ol>
+<li>在 Play Console 里补全应用商店资料（图标、截图、描述、分级）。</li>
+<li>通过 Google Play 的正式审核流程（内容分级、隐私政策、权限审查）。</li>
+<li>自己管理签名密钥（或使用 Play App Signing）。</li>
+<li>承担生产发布的合规责任（GDPR、儿童隐私、应用内购买等）。</li>
+</ol>
+<p><strong>不能把 AI Studio 的「publish to Play Store」当成生产发布开关。</strong> 技术负责人要做的第五个判断是：<strong>明确团队使用哪条路径——个人试用走路径一（前提是在美国且用个人账号），团队内部测试走路径二，生产发布必须在 Play Console 里完成路径三。</strong></p>
+<h3 id="另一条路径：WebUSB-ADB-真机安装（不是上架）"><a href="#另一条路径：WebUSB-ADB-真机安装（不是上架）" class="headerlink" title="另一条路径：WebUSB &#x2F; ADB 真机安装（不是上架）"></a>另一条路径：WebUSB &#x2F; ADB 真机安装（不是上架）</h3><p>AI Studio 还支持通过 <strong>WebUSB</strong> 直接安装到通过 USB 连接的真机，需要：</p>
+<ul>
+<li>Chrome 或 Edge 浏览器支持 WebUSB。</li>
+<li>Android 设备已开启开发者选项与 USB 调试。</li>
+</ul>
+<p>这是开发测试路径，不是分发路径。不要把它说成上架。</p>
+<h2 id="第四层：计费与资格（官方写「at-no-cost」有范围限制）"><a href="#第四层：计费与资格（官方写「at-no-cost」有范围限制）" class="headerlink" title="第四层：计费与资格（官方写「at no cost」有范围限制）"></a>第四层：计费与资格（官方写「at no cost」有范围限制）</h2><p>博客营销语使用 <strong>at no cost</strong>，但这只适用于文档写明的范围：</p>
+<ol>
+<li><strong>个人资料库无 $25 注册费</strong>（前提：在美国、18+ 个人账号）。</li>
+<li><strong>Firebase Spark 计划免费开通</strong>（前提：在共享配额范围内）。</li>
+<li><strong>AI Studio 生成与模拟器测试免费</strong>（官方未公布 AI Studio 的 Gemini 调用计费模型，但博客写 at no cost）。</li>
+</ol>
+<p><strong>不要写成整个链路永远免费。</strong> Gemini API 调用、Blaze 升级、Play 开发者账号费用必须分层写：</p>
+<ul>
+<li><strong>Gemini API 调用</strong>（从 Android 应用通过 Firebase AI Logic 调用）：官方未在此次博客中公布计费模型，但 Firebase 文档写明这是受 App Check 保护的调用，意味着有配额或计费。技术负责人要自行查阅 Gemini API 定价页核对。</li>
+<li><strong>Firebase Blaze 升级</strong>：一旦触达共享配额日限额，要么等到太平洋时间午夜恢复，要么升 Blaze。Blaze 是按量计费，Firestore 的读写、存储、网络出站都有定价。</li>
+<li><strong>Play 开发者账号</strong>：内部测试轨道需要 $25 一次性注册费。生产发布同样需要这个账号。</li>
+</ul>
+<p>技术负责人要做的第六个判断是：<strong>测算应用的日活、读写量、存储量、以及 Gemini API 调用频次，提前决定是否需要升 Blaze，以及是否需要注册 Play 开发者账号（如果要做内部测试或生产发布）。</strong></p>
+<h3 id="地区与账号资格再核对"><a href="#地区与账号资格再核对" class="headerlink" title="地区与账号资格再核对"></a>地区与账号资格再核对</h3><p>再次强调：<strong>个人资料库仅限美国、18+ 个人 Google 账号、不支持 Workspace &#x2F; 工作或学校账号</strong>。如果你的团队主要成员不在美国，或公司统一使用 Workspace 账号，那么个人资料库路径不可用，只能走内部测试或生产发布路径。</p>
+<h2 id="给技术负责人的可执行落地建议"><a href="#给技术负责人的可执行落地建议" class="headerlink" title="给技术负责人的可执行落地建议"></a>给技术负责人的可执行落地建议</h2><p>如果你要评估 AI Studio 进 Android 客户端产线，建议按以下顺序落地：</p>
+<h3 id="1-能力边界盘点：先列出哪些项目可以试"><a href="#1-能力边界盘点：先列出哪些项目可以试" class="headerlink" title="1. 能力边界盘点：先列出哪些项目可以试"></a>1. 能力边界盘点：先列出哪些项目可以试</h3><ul>
+<li>列出团队的 Android 项目，逐条核对是否在单 Activity、单模块、Kotlin + Jetpack Compose、无 NDK、无 Wear OS 范围内。</li>
+<li>暂时<strong>不试</strong>多模块分层架构、原生 C&#x2F;C++ 加密库、Wear OS 表盘、或需要 Google Workspace APIs 的项目。</li>
+<li>选 1-2 个风险可控的小项目做 pilot，例如「内部工具」或「个人效率应用」。</li>
+</ul>
+<h3 id="2-导出与-CI-CD-集成：核对官方文档冲突"><a href="#2-导出与-CI-CD-集成：核对官方文档冲突" class="headerlink" title="2. 导出与 CI&#x2F;CD 集成：核对官方文档冲突"></a>2. 导出与 CI&#x2F;CD 集成：核对官方文档冲突</h3><ul>
+<li>产品文档写 ZIP only，Learn 页写可以 sync with GitHub——在官方解决这个文档冲突之前，接受 ZIP 导出手动推 GitHub，或等官方明确支持。</li>
+<li>如果团队 CI&#x2F;CD 流程强依赖 GitHub 集成，提前确认是否可以接受手动推送。</li>
+</ul>
+<h3 id="3-Firebase-配额与计费规划：测算日活与读写量"><a href="#3-Firebase-配额与计费规划：测算日活与读写量" class="headerlink" title="3. Firebase 配额与计费规划：测算日活与读写量"></a>3. Firebase 配额与计费规划：测算日活与读写量</h3><ul>
+<li>测算应用的预估日活、每用户日均读写次数、存储量。</li>
+<li>核对是否会触达 50,000 reads&#x2F;day 或 40,000 writes&#x2F;day。如果会，提前决定升 Blaze，并把 AI Studio 项目接到隔离的 GCP 账单账户上（避免影响同一账单下其他项目）。</li>
+<li>明确谁负责审 Firestore Security Rules、审到什么粒度。</li>
+</ul>
+<h3 id="4-分发路径选择：不要混淆三条路径"><a href="#4-分发路径选择：不要混淆三条路径" class="headerlink" title="4. 分发路径选择：不要混淆三条路径"></a>4. 分发路径选择：不要混淆三条路径</h3><ul>
+<li><strong>个人试用</strong>：如果在美国、用个人 @gmail.com 账号、只给自己装，走个人资料库路径（免费）。</li>
+<li><strong>团队内部测试</strong>：如果要分发给最多 100 名测试人员，走内部测试轨道（需 $25 Play 开发者账号）。</li>
+<li><strong>生产发布</strong>：必须在 Play Console 里走正式流程，补全商店资料、通过审核、自己管理签名。</li>
+</ul>
+<p><strong>不要把个人资料库当成生产发布开关。</strong> 对不在美国或使用 Workspace 账号的团队，连个人资料库都不可用。</p>
+<h3 id="5-权限与合规审查：盯住高风险权限与禁止类别"><a href="#5-权限与合规审查：盯住高风险权限与禁止类别" class="headerlink" title="5. 权限与合规审查：盯住高风险权限与禁止类别"></a>5. 权限与合规审查：盯住高风险权限与禁止类别</h3><ul>
+<li>个人资料库禁止高风险权限（无障碍&#x2F;SMS&#x2F;通话记录&#x2F;安装包&#x2F;通知监听）、禁止广告变现、禁止金融&#x2F;加密货币&#x2F;真钱赌博&#x2F;政府服务。</li>
+<li>如果应用需要这些权限或属于这些类别，不能走个人资料库路径，只能走内部测试或生产发布（且必须通过 Play 正式审核）。</li>
+</ul>
+<h3 id="6-真机测试：模拟器限制与硬件特性"><a href="#6-真机测试：模拟器限制与硬件特性" class="headerlink" title="6. 真机测试：模拟器限制与硬件特性"></a>6. 真机测试：模拟器限制与硬件特性</h3><ul>
+<li>模拟器无相机&#x2F;NFC&#x2F;蓝牙，GPS 为模拟，Google Play 服务不可用。</li>
+<li>如果应用依赖这些硬件特性，必须尽早通过 WebUSB 或 Play 安装到真机测试。</li>
+</ul>
+<h3 id="7-删除与清理流程：明确-Firebase-项目归属"><a href="#7-删除与清理流程：明确-Firebase-项目归属" class="headerlink" title="7. 删除与清理流程：明确 Firebase 项目归属"></a>7. 删除与清理流程：明确 Firebase 项目归属</h3><ul>
+<li>删除 AI Studio 应用不会自动删除 Firebase 项目或数据。</li>
+<li>明确团队内部流程：删除 AI Studio 应用后，谁负责去 Firebase 控制台清理项目、删除数据库、移除服务账号。</li>
+</ul>
+<h3 id="8-计费风险隔离：不要把-AI-Studio-项目接到未隔离的公司-GCP-账单上"><a href="#8-计费风险隔离：不要把-AI-Studio-项目接到未隔离的公司-GCP-账单上" class="headerlink" title="8. 计费风险隔离：不要把 AI Studio 项目接到未隔离的公司 GCP 账单上"></a>8. 计费风险隔离：不要把 AI Studio 项目接到未隔离的公司 GCP 账单上</h3><ul>
+<li>在 AI Studio 开通计费会把关联账单账户升级为付费账户，可能让同一账单下其他项目也开始按量计费。</li>
+<li>建议把 AI Studio 项目接到隔离的 GCP 账单账户上，或至少提前核对同一账单下有哪些项目、是否能接受全部转为按量计费。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>Google AI Studio 的 Android 应用生成能力已经很强，但技术负责人要判断的不是「能不能一键上架」，而是四层边界各自怎么定：</p>
+<ol>
+<li><strong>生成器能力边界</strong>：单 Activity、单模块、Kotlin + Jetpack Compose only、无 NDK、无 Wear OS。导出有官方文档冲突（ZIP only vs sync with GitHub），以产品 UI 和文档为准。</li>
+<li><strong>Firebase 后端开通与安全规则审查</strong>：共享配额组有日限额（50,000 reads&#x2F;day、40,000 writes&#x2F;day），触达后整组暂停。升 Blaze 不会自动取消共享配额，必须在 Firebase 控制台点 Upgrade database。Security Rules 需人工审查，官方不对 AI 生成规则的漏洞负责。</li>
+<li><strong>三条分发路径（不可混淆）</strong>：个人资料库（仅限美国、18+ 个人账号、不支持 Workspace、免费、私有、不审核）、内部测试（需 $25 Play 账号、最多 100 人）、生产发布（必须在 Play Console 里走正式流程）。不要把博客里的「publish to Play Store」当成生产发布开关。</li>
+<li><strong>计费与地区资格限制</strong>：「at no cost」只适用于个人资料库（前提在美国）、Spark 计划（前提在共享配额内）。Gemini API 调用、Blaze 升级、Play 开发者账号都有费用。地区与账号资格须逐条核对。</li>
+</ol>
+<p><strong>这些边界不是产品文档能替你回答的——它们取决于你的项目架构、日活规模、合规要求、团队地域分布与账号类型。</strong> 产品给了你一套可快速生成的能力，但边界还得你自己钉。</p>
+<h2 id="核验链接（发布前请再次确认）"><a href="#核验链接（发布前请再次确认）" class="headerlink" title="核验链接（发布前请再次确认）"></a>核验链接（发布前请再次确认）</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://developers.googleblog.com/build-full-stack-android-apps-with-gemini-in-google-ai-studio/">Build full-stack Android apps with Gemini in Google AI Studio（2026-11-17）</a></li>
+<li><a target="_blank" rel="noopener" href="https://aistudio.google.com/docs/aistudio-android">Google AI Studio - Build Android apps（产品文档）</a></li>
+<li><a target="_blank" rel="noopener" href="https://firebase.google.com/docs/ai-assistance/ai-studio-integration">Add Firebase to your Google AI Studio app（Firebase 文档，页脚显示 Last updated 2026-11-18 UTC）</a></li>
+<li><a target="_blank" rel="noopener" href="https://support.google.com/googleplay/answer/18936837">Create &amp; manage AI-generated personal apps on Google Play（Google Play 帮助中心）</a></li>
+<li><a target="_blank" rel="noopener" href="https://aistudio.google.com/learn/build-android-apps">How to build Android apps in minutes（Learn 页）</a></li>
+</ol>
+<hr>
+<p><strong>孙升隆（SSLoong）</strong>，devloong.com，技术负责人。本文依据截至 2026-11-27 的官方博客、产品文档、Firebase 文档与 Google Play 帮助中心解读，不是本团队产线实测。如官方页与本文有出入，以官方最新页为准。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/Google-AI-Studio/" rel="tag"># Google AI Studio</a>
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Firebase/" rel="tag"># Firebase</a>
+              <a href="/tags/Play-Store/" rel="tag"># Play Store</a>
+              <a href="/tags/%E5%8F%91%E5%B8%83%E8%BE%B9%E7%95%8C/" rel="tag"># 发布边界</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/" rel="prev" title="Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界">
+                  <i class="fa fa-angle-left"></i> Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"e8f51aee119c43c4825a65752b8a0462"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

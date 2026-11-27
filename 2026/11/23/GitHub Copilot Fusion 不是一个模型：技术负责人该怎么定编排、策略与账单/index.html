@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo-mine.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"devloong.com","root":"/","images":"/images","scheme":"Pisces","darkmode":"auto","version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":"always","style":"mac","show_result":true},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":true,"color":"#fc6423","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.json","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="2026年10月28日 GitHub Copilot Fusion GA，团队容易把 model picker 里的 Fusion 当成又一个模型。这是错误的决策单元——技术负责人真正要定的是 effort level、管理员模型策略、以及 11 月 30 日折扣结束后的账单与容量。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单">
+<meta property="og:url" content="https://devloong.com/2026/11/23/GitHub%20Copilot%20Fusion%20%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E7%BC%96%E6%8E%92%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%B4%A6%E5%8D%95/index.html">
+<meta property="og:site_name" content="Loong&#39;s Blog">
+<meta property="og:description" content="2026年10月28日 GitHub Copilot Fusion GA，团队容易把 model picker 里的 Fusion 当成又一个模型。这是错误的决策单元——技术负责人真正要定的是 effort level、管理员模型策略、以及 11 月 30 日折扣结束后的账单与容量。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devloong.com/images/copilot-fusion-hero.jpg">
+<meta property="og:image" content="https://devloong.com/images/copilot-fusion-decision-layers.jpg">
+<meta property="og:image" content="https://devloong.com/images/copilot-fusion-patterns.jpg">
+<meta property="article:published_time" content="2026-11-23T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-27T05:54:12.777Z">
+<meta property="article:author" content="八块腹肌的孙先生">
+<meta property="article:tag" content="Copilot Fusion">
+<meta property="article:tag" content="GitHub Copilot">
+<meta property="article:tag" content="Terminal-Bench">
+<meta property="article:tag" content="技术负责人">
+<meta property="article:tag" content="模型编排">
+<meta property="article:tag" content="计费">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://devloong.com/images/copilot-fusion-hero.jpg">
+
+
+<link rel="canonical" href="https://devloong.com/2026/11/23/GitHub%20Copilot%20Fusion%20%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E7%BC%96%E6%8E%92%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%B4%A6%E5%8D%95/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://devloong.com/2026/11/23/GitHub%20Copilot%20Fusion%20%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E7%BC%96%E6%8E%92%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%B4%A6%E5%8D%95/","path":"2026/11/23/GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单/","title":"GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单 | Loong's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script><script src="/js/bookmark.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Loong's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%88%86%E6%B8%85%E4%B8%89%E5%B1%82%EF%BC%9A%E6%A8%A1%E5%9E%8B%E8%83%BD%E5%8A%9B%E3%80%81Agent-%E8%BF%90%E8%A1%8C%E6%97%B6%E3%80%81%E5%A5%97%E9%A4%90%E4%B8%8E%E8%AE%A1%E8%B4%B9%E4%B8%8D%E8%83%BD%E6%B7%B7%E4%B8%BA%E4%B8%80%E8%B0%88"><span class="nav-number">1.</span> <span class="nav-text">先分清三层：模型能力、Agent 运行时、套餐与计费不能混为一谈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9AFusion-%E6%98%AF%E8%BF%90%E8%A1%8C%E6%97%B6%E8%B7%AF%E7%94%B1%E4%B8%8E%E7%BC%96%E6%8E%92%E5%99%A8%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%A8%A1%E5%9E%8B%E6%9C%AC%E8%BA%AB"><span class="nav-number">1.1.</span> <span class="nav-text">第一层：Fusion 是运行时路由与编排器，不是模型本身</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9A%E4%B8%89%E7%A7%8D%E7%BC%96%E6%8E%92%E6%A8%A1%E5%BC%8F%EF%BC%88Single-Cascade-Critique%EF%BC%89%E5%86%B3%E5%AE%9A%E5%BB%B6%E8%BF%9F%E4%B8%8E%E6%88%90%E6%9C%AC"><span class="nav-number">1.2.</span> <span class="nav-text">第二层：三种编排模式（Single &#x2F; Cascade &#x2F; Critique）决定延迟与成本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9A%E4%B8%89%E6%A1%A3-effort-level%EF%BC%88Standard-High-Max%EF%BC%89%E4%B8%8E-Fast"><span class="nav-number">1.3.</span> <span class="nav-text">第三层：三档 effort level（Standard &#x2F; High &#x2F; Max）与 Fast</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9A%E5%A5%97%E9%A4%90%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%AE%A1%E8%B4%B9%EF%BC%88%E5%BF%85%E9%A1%BB%E7%94%A8%E5%AE%98%E6%96%B9%E6%9C%80%E6%96%B0%E9%A1%B5%EF%BC%8C%E4%B8%8D%E8%A6%81%E6%B7%B7%E7%94%A8%E8%BF%87%E6%97%B6%E5%8F%A3%E5%BE%84%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">第四层：套餐、策略与计费（必须用官方最新页，不要混用过时口径）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E8%B4%B9%E8%A7%84%E5%88%99%EF%BC%88%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3%EF%BC%8C2026-11-23-%E6%A0%B8%E5%AF%B9%EF%BC%89"><span class="nav-number">1.4.1.</span> <span class="nav-text">计费规则（官方文档，2026-11-23 核对）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%8C%83%E5%9B%B4%EF%BC%88%E9%9C%80%E8%A6%81%E5%88%86%E8%BF%B0-Changelog-%E4%B8%8E-Docs-%E4%B8%A4%E4%B8%AA%E6%9D%A5%E6%BA%90%EF%BC%89"><span class="nav-number">1.4.2.</span> <span class="nav-text">客户端范围（需要分述 Changelog 与 Docs 两个来源）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E5%91%98%E7%AD%96%E7%95%A5%EF%BC%9A%E9%BB%98%E8%AE%A4%E5%90%AF%E7%94%A8-%E2%89%A0-%E4%B8%8D%E8%83%BD%E8%87%AA%E4%B8%BB%E6%89%A7%E8%A1%8C"><span class="nav-number">1.4.3.</span> <span class="nav-text">管理员策略：默认启用 ≠ 不能自主执行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E8%AF%BB-Terminal-Bench-4-1-%E7%9A%84-71-2-%EF%BC%9AAgent-%E6%A8%A1%E5%9E%8B%E7%BB%84%E5%90%88%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%A8%A1%E5%9E%8B%E5%8D%95%E7%8B%AC%E6%89%93%E5%88%86"><span class="nav-number">2.</span> <span class="nav-text">怎么读 Terminal-Bench 4.1 的 71.2%：Agent + 模型组合，不是模型单独打分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E8%90%BD%E5%9C%B0%E7%9A%84%E7%AD%96%E7%95%A5%EF%BC%9A%E7%BC%96%E6%8E%92%E3%80%81%E6%A8%A1%E5%9E%8B%E7%AD%96%E7%95%A5%E3%80%81%E8%B4%A6%E5%8D%95%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">3.</span> <span class="nav-text">技术负责人该落地的策略：编排、模型策略、账单与边界</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E9%BB%98%E8%AE%A4-effort-level-%E4%B8%8D%E8%A6%81%E5%86%99%E3%80%8C%E4%B8%8A-Fusion%E3%80%8D%EF%BC%8C%E8%A6%81%E5%86%99%E6%B8%85-Standard-High-Max-%E5%88%86%E5%88%AB%E7%94%A8%E4%BA%8E%E5%93%AA%E7%B1%BB%E4%BB%BB%E5%8A%A1"><span class="nav-number">3.1.</span> <span class="nav-text">1. 默认 effort level 不要写「上 Fusion」，要写清 Standard &#x2F; High &#x2F; Max 分别用于哪类任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%AE%A1%E7%90%86%E5%91%98%E5%BA%94%E4%B8%BB%E5%8A%A8%E9%85%8D%E7%BD%AE-Fusion-%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%9E%8B%EF%BC%8C%E5%B9%B6%E5%86%B3%E5%AE%9A%E6%98%AF%E5%90%A6%E8%AE%BE%E4%B8%BA%E9%BB%98%E8%AE%A4"><span class="nav-number">3.2.</span> <span class="nav-text">2. 管理员应主动配置 Fusion 可用模型，并决定是否设为默认</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%9C%A8-2026-12-01-%E5%89%8D%EF%BC%8C%E7%94%A8-30-%E6%8A%98%E6%89%A3%E5%81%9A%E5%AE%B9%E9%87%8F%E8%A7%84%E5%88%92%E7%9A%84%E5%9B%A2%E9%98%9F%E5%BF%85%E9%A1%BB%E6%8C%89-12-1-%E5%90%8E%E7%9A%84%E6%A0%87%E5%87%86%E8%B4%B9%E7%8E%87%E9%87%8D%E7%AE%97"><span class="nav-number">3.3.</span> <span class="nav-text">3. 在 2026-12-01 前，用 30% 折扣做容量规划的团队必须按 12&#x2F;1 后的标准费率重算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BB%8D%E5%BA%94%E5%9C%A8%E5%90%88%E8%A7%84%E6%88%96%E5%BF%85%E9%A1%BB%E9%92%89%E6%AD%BB%E6%A8%A1%E5%9E%8B%E6%97%B6%E6%89%8B%E5%8A%A8%E9%80%89%E6%A8%A1%E5%9E%8B%EF%BC%8C%E4%B8%8D%E8%A6%81%E6%8C%87%E6%9C%9B-Fusion-%E5%8E%BB%E6%BB%A1%E8%B6%B3%E6%89%80%E6%9C%89%E7%AD%96%E7%95%A5%E7%BA%A6%E6%9D%9F"><span class="nav-number">3.4.</span> <span class="nav-text">4. 仍应在合规或必须钉死模型时手动选模型，不要指望 Fusion 去满足所有策略约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E6%8F%90%E4%BA%A4%E5%89%8D%E6%A3%80%E6%9F%A5%E8%A2%AB%E4%B8%A2%E5%BC%83%E8%8D%89%E7%A8%BF%E7%95%99%E4%B8%8B%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8C%BA%E6%94%B9%E5%8A%A8%EF%BC%9B%E4%B8%8D%E8%A6%81%E6%8C%87%E6%9C%9B-Fusion-%E5%8E%BB%E6%8B%89%E8%B5%B7-subagents"><span class="nav-number">3.5.</span> <span class="nav-text">5. 提交前检查被丢弃草稿留下的工作区改动；不要指望 Fusion 去拉起 subagents</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-%E5%86%85%E9%83%A8%E9%80%89%E5%9E%8B%E4%BB%A5%E8%87%AA%E5%B7%B1%E7%9A%84%E4%BB%93%E5%BA%93-%E6%97%A2%E5%AE%9A%E8%BF%90%E8%A1%8C%E6%97%B6-%E6%97%A2%E5%AE%9A%E7%AD%96%E7%95%A5%E5%81%9A%E5%AF%B9%E7%85%A7%E5%AE%9E%E9%AA%8C%EF%BC%9B%E4%B8%8D%E8%A6%81%E6%8A%8A%E4%B8%8D%E5%90%8C-Agent-%E7%9A%84%E6%A6%9C%E5%8D%95%E5%88%86%E6%95%B0%E7%9B%B4%E6%8E%A5%E5%BD%93%E6%A8%A1%E5%9E%8B%E9%AB%98%E4%B8%8B"><span class="nav-number">3.6.</span> <span class="nav-text">6. 内部选型以自己的仓库 + 既定运行时 + 既定策略做对照实验；不要把不同 Agent 的榜单分数直接当模型高下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%9E%8B%EF%BC%88public-preview%EF%BC%89%E4%B8%80%E5%B0%8F%E8%8A%82%E5%8D%B3%E5%8F%AF%EF%BC%8C%E4%B8%8D%E8%A6%81%E5%86%99%E6%88%90%E5%9B%A2%E9%98%9F%E9%BB%98%E8%AE%A4%E6%96%B9%E6%A1%88"><span class="nav-number">3.7.</span> <span class="nav-text">7. 本地模型（public preview）一小节即可，不要写成团队默认方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%92%8C%E4%B8%8A%E5%91%A8%E4%BA%94-Gemini-4-%E6%96%87%E7%AB%A0%E6%80%8E%E4%B9%88%E9%94%99%E5%BC%80%E7%9C%8B"><span class="nav-number">4.</span> <span class="nav-text">和上周五 Gemini 4 文章怎么错开看</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E9%AA%8C%E9%93%BE%E6%8E%A5%EF%BC%882026-11-23-%E6%A0%B8%E5%AF%B9%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">核验链接（2026-11-23 核对）</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="八块腹肌的孙先生"
+      src="/images/icon.jpeg">
+  <p class="site-author-name" itemprop="name">八块腹肌的孙先生</p>
+  <div class="site-description" itemprop="description">永远相信，美好的事情即将发生</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">81</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SSLoong" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SSLoong" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5043118685" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5043118685" rel="noopener me" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://devloong.com/2026/11/23/GitHub%20Copilot%20Fusion%20%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9A%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E7%BC%96%E6%8E%92%E3%80%81%E7%AD%96%E7%95%A5%E4%B8%8E%E8%B4%A6%E5%8D%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/icon.jpeg">
+      <meta itemprop="name" content="八块腹肌的孙先生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Loong's Blog">
+      <meta itemprop="description" content="永远相信，美好的事情即将发生">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单 | Loong's Blog">
+      <meta itemprop="description" content="2026年10月28日 GitHub Copilot Fusion GA，团队容易把 model picker 里的 Fusion 当成又一个模型。这是错误的决策单元——技术负责人真正要定的是 effort level、管理员模型策略、以及 11 月 30 日折扣结束后的账单与容量。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GitHub Copilot Fusion 不是一个模型：技术负责人该怎么定编排、策略与账单
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-11-23 10:00:00" itemprop="dateCreated datePublished" datetime="2026-11-23T10:00:00+08:00">2026-11-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-11-27 13:54:12" itemprop="dateModified" datetime="2026-11-27T13:54:12+08:00">2026-11-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">AI编程</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+            <div class="post-description">2026年10月28日 GitHub Copilot Fusion GA，团队容易把 model picker 里的 Fusion 当成又一个模型。这是错误的决策单元——技术负责人真正要定的是 effort level、管理员模型策略、以及 11 月 30 日折扣结束后的账单与容量。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>2026 年 10 月 28 日，GitHub Copilot Fusion <strong>正式 GA</strong>。团队容易把 model picker 里的 Fusion 当成又一个模型，问「我们要不要换到 Fusion」。<strong>这是错误的决策单元。</strong></p>
+<p>真正要问的是：Fusion Standard &#x2F; High &#x2F; Max 分别用在哪类任务上、管理员模型策略如何配置、Single &#x2F; Cascade &#x2F; Critique 三种编排模式会怎样影响延迟与成本、<strong>11 月 30 日 30% 折扣结束后的账单规划是否还成立</strong>，以及 Terminal-Bench 4.1 的 71.2% 在自己的任务中能不能复现。把这些混在一起，就是把模型能力、Agent 运行时、套餐权益、计费单价搅成一锅粥，最后上线发现「切了 Fusion 账单翻倍了」或者「模型池变了导致质量下滑」。</p>
+<p>本文依据截至 <strong>2026-11-23</strong> 的 GitHub Changelog（2026-10-28 与 2026-11-17）、GitHub Docs 概念页、个人计费页与 Terminal-Bench 4.1 公开榜解读，<strong>不是</strong>本团队产线实测。我会在文末列出官方链接供核验。</p>
+<p><img src="/images/copilot-fusion-hero.jpg" alt="封面:Copilot Fusion不是一个模型，而是路由与编排层"></p>
+<p><em>概念配图：Fusion 不是 model picker 里的又一个模型，而是智能路由与编排层，下方分出 Standard、High、Max 三档 effort level。</em></p>
+<span id="more"></span>
+
+<h2 id="先分清三层：模型能力、Agent-运行时、套餐与计费不能混为一谈"><a href="#先分清三层：模型能力、Agent-运行时、套餐与计费不能混为一谈" class="headerlink" title="先分清三层：模型能力、Agent 运行时、套餐与计费不能混为一谈"></a>先分清三层：模型能力、Agent 运行时、套餐与计费不能混为一谈</h2><p>技术负责人选型时最常见的错误，是把<strong>模型能力</strong>、<strong>Agent &#x2F; 产品运行时</strong>、<strong>套餐权益与计费</strong>当成一回事。Fusion 让这个问题更明显：同一个「Fusion」名称同时出现在 effort level 选择器、编排模式、管理员策略、计费折扣四个层面，每个层面有自己的决策边界。</p>
+<p><img src="/images/copilot-fusion-decision-layers.jpg" alt="三层决策框架:模型能力、运行时编排、计费与策略分层"></p>
+<p><em>决策分层示意：模型能力由 Fusion 动态选择，运行时负责编排（Single &#x2F; Cascade &#x2F; Critique），最上层是计划、折扣与管理员策略。图中日历标注 30 NOV、价签 30%，提示 2026 年 11 月 30 日折扣截止。</em></p>
+<h3 id="第一层：Fusion-是运行时路由与编排器，不是模型本身"><a href="#第一层：Fusion-是运行时路由与编排器，不是模型本身" class="headerlink" title="第一层：Fusion 是运行时路由与编排器，不是模型本身"></a>第一层：Fusion 是运行时路由与编排器，不是模型本身</h3><p>官方概念文档写得很清楚（<a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/concepts/models/copilot-fusion">About GitHub Copilot Fusion</a>）：<strong>Copilot Fusion is an intelligent runtime model router and orchestrator</strong>。它为任务选择模型与 execution pattern，然后返回<strong>一个</strong> response。</p>
+<p><strong>你在 model picker 里选择 Fusion，选的不是某个具体模型。</strong> 你选择的是一个系统，它会在运行时为每个任务路由、编排模型。你不需要在任务过程中手动切换模型，也不需要判断哪个模型适合哪一步。对于每个 prompt，Fusion 决定使用哪些模型以及它们如何协作，而你只需要选择正确的 effort level。</p>
+<p>Fusion 会考虑<strong>实时系统健康与可用性</strong>。路由发生在自然缓存边界（natural cache boundaries），以及对话复杂度发生较大变化时，以避免没有质量提升的额外缓存成本。</p>
+<p>它按任务评估，并使用 reasoning、code generation、debugging、tool use 等 capability signals，选择能满足当前 effort level 质量门槛的、尽量高效的 execution pattern。<strong>推理力度与模型选择是 per step 的</strong>。模型池会随新模型与 GitHub 评估而变化——不要把 11-17 新增的 Claude Sonnet 5.5 &#x2F; GPT-6.1 Terra &#x2F; MAI-Code-2 名单写成固定名单。</p>
+<h3 id="第二层：三种编排模式（Single-Cascade-Critique）决定延迟与成本"><a href="#第二层：三种编排模式（Single-Cascade-Critique）决定延迟与成本" class="headerlink" title="第二层：三种编排模式（Single &#x2F; Cascade &#x2F; Critique）决定延迟与成本"></a>第二层：三种编排模式（Single &#x2F; Cascade &#x2F; Critique）决定延迟与成本</h3><p>Fusion 会在每个 prompt 评估后，选择三种 execution pattern 之一：</p>
+<p><img src="/images/copilot-fusion-patterns.jpg" alt="三种执行模式:Single、Cascade、Critique"></p>
+<p><em>三种 execution pattern 示意：Single 一次完成，Cascade 由 judge 决定接受或升级，Critique 多模型并行审阅后由原模型修订。</em></p>
+<table>
+<thead>
+<tr>
+<th>Execution pattern</th>
+<th>描述（官方文档，2026-11-23 核对）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Single</strong></td>
+<td>一个模型完成任务。行为类似一次单模型请求。</td>
+</tr>
+<tr>
+<td><strong>Cascade</strong></td>
+<td>高效模型起草，judge 检查草稿，决定接受或 escalate 到更强模型。</td>
+</tr>
+<tr>
+<td><strong>Critique</strong></td>
+<td>一个模型起草，<strong>多个模型并行、独立</strong> critique，反馈汇总后由<strong>原模型</strong>修订。</td>
+</tr>
+</tbody></table>
+<p><strong>每个 prompt 都可选择不同 pattern，同一 session 内后一个 prompt 可以和前一个不同。</strong> 选择 pattern 是轻量步骤，增加的延迟很小。</p>
+<p><strong>只在任务需要时才增加额外模型调用；简单任务不会为了不需要的 review 等待或消耗 AI credits。</strong> Single 行为类似一次单模型请求。Cascade 和 Critique 会更久，因为包含用于 review 的模型调用。</p>
+<p>过程中可跟踪每一步及所用模型；中间草稿可能被修订或丢弃，<strong>只向用户展示最终回复</strong>。回复下方可 hover effort level 名称，查看用过的模型列表。</p>
+<h3 id="第三层：三档-effort-level（Standard-High-Max）与-Fast"><a href="#第三层：三档-effort-level（Standard-High-Max）与-Fast" class="headerlink" title="第三层：三档 effort level（Standard &#x2F; High &#x2F; Max）与 Fast"></a>第三层：三档 effort level（Standard &#x2F; High &#x2F; Max）与 Fast</h3><p>官方文档（2026-11-23 核对）对三档 effort level 的定义：</p>
+<table>
+<thead>
+<tr>
+<th>Effort level</th>
+<th>优先级</th>
+<th>典型使用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Fusion Standard</strong></td>
+<td>平衡成本、质量与延迟。</td>
+<td>Everyday work。文档写它会为每个任务选择一个模型。</td>
+</tr>
+<tr>
+<td><strong>Fusion High</strong></td>
+<td>带 moderate token savings 的平衡编排。</td>
+<td>适合范围清晰的较大改动，例如修复杂 bug 或跨多文件修改，且额外模型调用值得花费时间和 AI credits。</td>
+</tr>
+<tr>
+<td><strong>Fusion Max</strong></td>
+<td>在仍考虑 token efficiency 的前提下追求 frontier capability。</td>
+<td>需要最深推理与最彻底分析的任务。</td>
+</tr>
+<tr>
+<td><strong>Fusion Fast</strong></td>
+<td><strong>用户不可选</strong>。只在 Visual Studio Code inline chat 中、需要 fast models 的场景使用。</td>
+<td>不要写成用户可以切换到 Fast。</td>
+</tr>
+</tbody></table>
+<p><strong>若 picker 里没有 Fusion Max，可能是 Fusion Max 所需的一个或多个模型被禁用。</strong> 检查管理员模型策略（后文详述）。</p>
+<p><strong>Fusion 没有自己的 context window</strong>；界面上显示的是按所用模型中较小限制得出的保守值。</p>
+<h3 id="第四层：套餐、策略与计费（必须用官方最新页，不要混用过时口径）"><a href="#第四层：套餐、策略与计费（必须用官方最新页，不要混用过时口径）" class="headerlink" title="第四层：套餐、策略与计费（必须用官方最新页，不要混用过时口径）"></a>第四层：套餐、策略与计费（必须用官方最新页，不要混用过时口径）</h3><h4 id="计费规则（官方文档，2026-11-23-核对）"><a href="#计费规则（官方文档，2026-11-23-核对）" class="headerlink" title="计费规则（官方文档，2026-11-23 核对）"></a>计费规则（官方文档，2026-11-23 核对）</h4><p><a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing">个人计费文档</a> 与 <a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/concepts/models/copilot-fusion">Fusion 概念文档</a> 明确写明：</p>
+<blockquote>
+<p><strong>通过 2026 年 11 月 30 日</strong>，付费 Copilot 计划用户使用 Copilot Fusion 可获模型费用 <strong>30%</strong> 折扣。</p>
+</blockquote>
+<ul>
+<li>按实际用到的每个模型的标准费率计费，<strong>没有单独的 Fusion 收费</strong>。</li>
+<li>Fusion High 和 Fusion Max 可以在一个任务中使用多个模型，因此可能比 Fusion Standard 消耗更多 AI credits。</li>
+<li>会尽量把主对话保持在同一模型上，以便继续享受 cached tokens；协助模型（如 reviewer）只获得所需上下文。</li>
+</ul>
+<p><strong>重点</strong>：在 2026-12-01 后，30% 折扣结束。用导入价做容量规划的团队必须按 12&#x2F;1 后的标准费率重算——不能把折扣期当成稳态成本。</p>
+<p><strong>用量以 GitHub AI Credits 计；1 AI credit &#x3D; $0.01 USD</strong>。付费个人档位价格（仅在确有必要时点到，不要做成报价单）：Pro $10 &#x2F; 1,500 credits；Pro+ $39 &#x2F; 7,000；Max $100 &#x2F; 20,000。包含额度按自然月 UTC 重置，不结转。</p>
+<p><strong>另有一条（不要和 Fusion 的 30% 搞混）</strong>：付费计划在 Copilot Chat 使用 auto model selection，或使用 Copilot cloud agent 时，模型费用有 10% 折扣。这是另一个折扣项。</p>
+<h4 id="客户端范围（需要分述-Changelog-与-Docs-两个来源）"><a href="#客户端范围（需要分述-Changelog-与-Docs-两个来源）" class="headerlink" title="客户端范围（需要分述 Changelog 与 Docs 两个来源）"></a>客户端范围（需要分述 Changelog 与 Docs 两个来源）</h4><p>2026-10-28 Changelog GA 时写：<strong>所有 Copilot plans，在 Visual Studio Code、GitHub Copilot app、GitHub Copilot CLI、JetBrains IDEs</strong>。Support for additional clients is coming soon。</p>
+<p>2026-11-17 Changelog 更新：<strong>新增 github.com、Visual Studio、GitHub Mobile beta（iOS 和 Android）</strong>。<strong>生产版 GitHub Mobile 仍是 coming shortly</strong>，不要写成已经全量上线。</p>
+<p>概念文档的 GA 列表（可能滞后于 11-17 Changelog）：Visual Studio Code、Copilot CLI、GitHub Copilot app、JetBrains IDEs、Copilot in the cloud on GitHub.com。</p>
+<p><strong>正文写客户端范围时：11-17 Changelog 已增加 github.com、Visual Studio、GitHub Mobile beta；生产版 Mobile 尚未宣布 GA。以 Changelog + 当前客户端版本为准，并注明概念文档列表可能滞后。</strong></p>
+<h4 id="管理员策略：默认启用-≠-不能自主执行"><a href="#管理员策略：默认启用-≠-不能自主执行" class="headerlink" title="管理员策略：默认启用 ≠ 不能自主执行"></a>管理员策略：默认启用 ≠ 不能自主执行</h4><p>官方 10-28 Changelog 明确写：</p>
+<ul>
+<li>Fusion <strong>只使用</strong>企业&#x2F;组织模型策略中已启用的模型。</li>
+<li>企业管理员可以查看 Fusion 的候选模型，<strong>独立设置</strong>每个模型对 Fusion 的有效策略状态，并且可以<strong>只对 Fusion 禁用某模型、同时不对该模型的所有人禁用</strong>。</li>
+<li>管理员可以把任意 effort level 的 Copilot Fusion 设为使用 Enterprise managed settings 的用户的默认模型。</li>
+</ul>
+<p><strong>这是策略与权限配置，禁止写成「Fusion 不能自主执行」或「某一方不能干活」。</strong> 管理员可以限制 Fusion 可用的模型，也可以把 Fusion 设为默认；这不等于能力缺陷。</p>
+<p>若 Fusion 要用的模型对你一个都不可用，Fusion 不会出现在 model picker 中。这也不是「Fusion 不能自主执行」，而是策略限制。</p>
+<h2 id="怎么读-Terminal-Bench-4-1-的-71-2-：Agent-模型组合，不是模型单独打分"><a href="#怎么读-Terminal-Bench-4-1-的-71-2-：Agent-模型组合，不是模型单独打分" class="headerlink" title="怎么读 Terminal-Bench 4.1 的 71.2%：Agent + 模型组合，不是模型单独打分"></a>怎么读 Terminal-Bench 4.1 的 71.2%：Agent + 模型组合，不是模型单独打分</h2><p>2026-11-17 Changelog 公布：Copilot Fusion Max 在 <strong>Terminal-Bench 4.1</strong> 上达到 <strong>71.2%</strong> resolution rate，领先 Opus 5.5 与 Fable 5.2 <strong>5.4 个百分点</strong>；成本比 Fable 5.2 低 <strong>88%</strong>、比 Opus 5.5 低 <strong>57%</strong>。独立榜单由 Stanford、Harbor 与 Laude Institute 托管。</p>
+<p>我在 2026-11-23 打开 <a target="_blank" rel="noopener" href="https://www.tbench.ai/">Terminal-Bench 4.1 公开榜</a>，核对数字（须带误差区间，并写明是榜单公布、非本团队实测；成本是该榜跑批总成本，不是 Copilot 对终端用户的标价）：</p>
+<ol>
+<li><strong>Copilot Fusion(max) &#x2F; GitHub Copilot</strong>：71.2% ± 2.9%，Nov 17, 2026，3.3B tokens，$2.0k</li>
+<li><strong>Opus 5.5(max) &#x2F; Claude Code</strong>：65.8% ± 3.1%，Sep 22, 2026，8.0B，$4.7k</li>
+<li><strong>Fable 5.2(max) &#x2F; Claude Code</strong>：65.8% ± 2.8%，Nov 9, 2026，15.7B，$16.5k</li>
+</ol>
+<p>GitHub 所说「领先 5.4 个百分点」「比 Fable 5.2 便宜 88%、比 Opus 5.5 便宜 57%」与上述总成本（2.0 &#x2F; 16.5 ≈ 12% 即约低 88%；2.0 &#x2F; 4.7 ≈ 43% 即约低 57%）相符。</p>
+<p><strong>关键点：榜单对比的是「模型 + Agent」组合，不是模型单独打分。</strong> Copilot Fusion Max 是 <strong>Fusion Max 跑在 GitHub Copilot 上</strong>，对阵 <strong>Opus 5.5 (max) 跑在 Claude Code 上</strong>。不能写成「Fusion 比 Opus 更强」，因为 Fusion 是编排器，不是模型。</p>
+<p><strong>这个数字是 Agent + 模型</strong> 组合在 Terminal-Bench 4.1 任务上的表现，且是基准跑批成本，不是 Copilot 对终端用户的标价。禁止换算成「团队每任务多少钱」，因为团队用量、模型选择、折扣都会不同。</p>
+<p>另外，10-28 Changelog 还公布了 <strong>Artificial Analysis Coding Agent Index</strong>：Copilot Fusion Max scored 60, within two points of Claude Code with Opus 5.5 Max；约一半的 average API cost per task，约一半 tokens，每任务约少 40% 时间。<strong>这是 GitHub 在 10-28 Changelog 中的表述，不是我们复核过的第三方页面数字</strong>。若引用，必须写明「GitHub 官方 Changelog 公布，未经本团队复测」，且不要和 Terminal-Bench 4.1 数字混在同一个比较里，因为两者是不同的榜单、不同的评测规则。</p>
+<p>同榜还有其他条目（例如 Gemini 4 Carbon (high) &#x2F; Antigravity CLI 64.5% ± 3.2%）。<strong>不要展开打模型家族战</strong>，以免与上周五文章《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合》重复；如需一句带过，只为说明「同一榜上比的是不同运行时」。</p>
+<h2 id="技术负责人该落地的策略：编排、模型策略、账单与边界"><a href="#技术负责人该落地的策略：编排、模型策略、账单与边界" class="headerlink" title="技术负责人该落地的策略：编排、模型策略、账单与边界"></a>技术负责人该落地的策略：编排、模型策略、账单与边界</h2><p>基于官方文档与榜单数字，我给出以下可执行建议：</p>
+<h3 id="1-默认-effort-level-不要写「上-Fusion」，要写清-Standard-High-Max-分别用于哪类任务"><a href="#1-默认-effort-level-不要写「上-Fusion」，要写清-Standard-High-Max-分别用于哪类任务" class="headerlink" title="1. 默认 effort level 不要写「上 Fusion」，要写清 Standard &#x2F; High &#x2F; Max 分别用于哪类任务"></a>1. 默认 effort level 不要写「上 Fusion」，要写清 Standard &#x2F; High &#x2F; Max 分别用于哪类任务</h3><p>错误决策：「团队从下周开始用 Fusion。」</p>
+<p>正确决策：</p>
+<ul>
+<li><strong>日常 PR review、单元测试生成、文档补全、快速修改</strong>：<strong>Fusion Standard</strong>（平衡成本、质量与延迟，everyday work）。</li>
+<li><strong>复杂重构、跨模块调试、范围清晰的较大改动</strong>：<strong>Fusion High</strong>（平衡编排，带 moderate token savings，适合修复杂 bug 或跨多文件修改）。</li>
+<li><strong>最长周期、最重推理、开放式科研、安全审计</strong>：<strong>Fusion Max</strong>（frontier capability，需要最深推理与最彻底分析）。</li>
+</ul>
+<p><strong>不要把全流程长时间钉在 Fusion Max 上</strong>。Fusion High 和 Max 会在需要时调用多个模型，消耗更多 AI credits。如果任务不需要那么深的推理，用 Standard 就够了。</p>
+<h3 id="2-管理员应主动配置-Fusion-可用模型，并决定是否设为默认"><a href="#2-管理员应主动配置-Fusion-可用模型，并决定是否设为默认" class="headerlink" title="2. 管理员应主动配置 Fusion 可用模型，并决定是否设为默认"></a>2. 管理员应主动配置 Fusion 可用模型，并决定是否设为默认</h3><p>企业管理员可以通过 Copilot settings 的 model policy：</p>
+<ul>
+<li>查看 Fusion 的候选模型。</li>
+<li><strong>独立设置</strong>每个模型对 Fusion 的有效策略状态。</li>
+<li><strong>只对 Fusion 禁用某模型、同时不对该模型的所有人禁用</strong>（这样用户还能手动选该模型，但 Fusion 编排时不会用到它）。</li>
+<li>把任意 effort level 的 Copilot Fusion 设为使用 Enterprise managed settings 的用户的默认模型。</li>
+</ul>
+<p><strong>若团队需要严格控制成本或模型选择，应在 Fusion 上线前配置好策略</strong>，而不是上线后才发现「这月 AI Credits 超了」或「Fusion Max 在 picker 里消失了」。</p>
+<p>若 Fusion 要用的模型对你一个都不可用，Fusion 不会出现在 model picker 中。这不是「Fusion 不能自主执行」，而是策略限制——检查管理员模型策略，确认至少有一个 Fusion 需要的模型被启用。</p>
+<h3 id="3-在-2026-12-01-前，用-30-折扣做容量规划的团队必须按-12-1-后的标准费率重算"><a href="#3-在-2026-12-01-前，用-30-折扣做容量规划的团队必须按-12-1-后的标准费率重算" class="headerlink" title="3. 在 2026-12-01 前，用 30% 折扣做容量规划的团队必须按 12&#x2F;1 后的标准费率重算"></a>3. 在 2026-12-01 前，用 30% 折扣做容量规划的团队必须按 12&#x2F;1 后的标准费率重算</h3><p>如果团队在 11 月用 Fusion 的 30% 折扣做过测算，12 月 1 日起这个折扣会结束。按实际用到的每个模型的标准费率计费，没有单独的 Fusion 收费，但 High&#x2F;Max 可能因多模型调用消耗更多 AI credits。</p>
+<p><strong>不能把折扣期当成稳态成本。</strong> 如果团队的月度 AI Credits 消耗预估是基于折扣算的，现在就要重算。</p>
+<h3 id="4-仍应在合规或必须钉死模型时手动选模型，不要指望-Fusion-去满足所有策略约束"><a href="#4-仍应在合规或必须钉死模型时手动选模型，不要指望-Fusion-去满足所有策略约束" class="headerlink" title="4. 仍应在合规或必须钉死模型时手动选模型，不要指望 Fusion 去满足所有策略约束"></a>4. 仍应在合规或必须钉死模型时手动选模型，不要指望 Fusion 去满足所有策略约束</h3><p>Fusion 从受支持模型的定义列表中选择；可用模型取决于策略与订阅类型，并可能随时间变化。不会使用：</p>
+<ul>
+<li>计划中不可用的模型。</li>
+<li>管理员策略排除的模型。</li>
+<li>把 Copilot 限制为 data-resident 或 FedRAMP-compliant 模型的策略所排除的模型。</li>
+<li>限制 Evaluation models 的策略所排除的模型。</li>
+</ul>
+<p><strong>如果团队有数据驻留、合规、或必须钉死特定模型的需求，应该手动选模型，而不是用 Fusion</strong>。Fusion 的模型池会随时间变化，你无法保证它一直用某个特定模型。</p>
+<h3 id="5-提交前检查被丢弃草稿留下的工作区改动；不要指望-Fusion-去拉起-subagents"><a href="#5-提交前检查被丢弃草稿留下的工作区改动；不要指望-Fusion-去拉起-subagents" class="headerlink" title="5. 提交前检查被丢弃草稿留下的工作区改动；不要指望 Fusion 去拉起 subagents"></a>5. 提交前检查被丢弃草稿留下的工作区改动；不要指望 Fusion 去拉起 subagents</h3><p>官方文档的限制（2026-11-23 核对）：</p>
+<ul>
+<li><strong>Fusion 与 subagents 分开工作，不会启动 subagents</strong>。</li>
+<li><strong>若 Fusion 丢弃一份草稿，该草稿已在工作区做的修改（例如文件编辑）不会自动撤销</strong>。提交前要人工检查。</li>
+<li>execution patterns 与模型池可能随时间变化。</li>
+</ul>
+<p><strong>不要把 Fusion 当成万能层</strong>。它是编排器，不是 subagents 启动器。如果任务需要 subagents（例如 Copilot cloud agent），应该手动启动，而不是期待 Fusion 去做。</p>
+<p>如果 Fusion 在 Cascade 或 Critique 过程中丢弃了一个草稿，那个草稿可能已经改了文件、跑了命令。<strong>这些改动不会自动撤销</strong>。提交前要检查 diff，确认没有不想要的改动。</p>
+<h3 id="6-内部选型以自己的仓库-既定运行时-既定策略做对照实验；不要把不同-Agent-的榜单分数直接当模型高下"><a href="#6-内部选型以自己的仓库-既定运行时-既定策略做对照实验；不要把不同-Agent-的榜单分数直接当模型高下" class="headerlink" title="6. 内部选型以自己的仓库 + 既定运行时 + 既定策略做对照实验；不要把不同 Agent 的榜单分数直接当模型高下"></a>6. 内部选型以自己的仓库 + 既定运行时 + 既定策略做对照实验；不要把不同 Agent 的榜单分数直接当模型高下</h3><p>Terminal-Bench 4.1 的 71.2% 有决策参考价值，但不能写成「换 Fusion 就比 Opus 强」，因为：</p>
+<ul>
+<li>榜单对比的是 <strong>Fusion Max 跑在 GitHub Copilot 上</strong> vs <strong>Opus 5.5 (max) 跑在 Claude Code 上</strong>。</li>
+<li>不同 Agent 的 harness、工具调用、环境配置都会影响结果。</li>
+<li>榜单数字是在 Terminal-Bench 4.1 任务上的表现，不一定能直接复现到你的任务中。</li>
+</ul>
+<p><strong>建议</strong>：选几个团队真实的 PR 或 issue，在 GitHub Copilot 里分别用 Fusion Standard &#x2F; High &#x2F; Max、以及手动选择的具体模型（例如 Claude Sonnet 5.5、GPT-6.1 Terra）各跑一遍，记录完成质量、耗时、token 消耗、成本。不要只看榜单，要看在自己的代码库里哪个组合最合适。</p>
+<h3 id="7-本地模型（public-preview）一小节即可，不要写成团队默认方案"><a href="#7-本地模型（public-preview）一小节即可，不要写成团队默认方案" class="headerlink" title="7. 本地模型（public preview）一小节即可，不要写成团队默认方案"></a>7. 本地模型（public preview）一小节即可，不要写成团队默认方案</h3><p>官方文档写：Windows 且机器满足规格时，可在 Copilot CLI &#x2F; Copilot app &#x2F; VS Code 内安装 <strong>MAI Code 1.1 Flash</strong>；仅 Fusion Standard 可能选用。Copilot CLI 中若本地安装 <strong>Qwen3.8 Flash Next</strong>（例如经 Ollama），且被识别为 <code>qwen3.8-flash-next-local</code>，Fusion Standard 也可能使用；支持 Windows、macOS、Linux。</p>
+<p><strong>预览期需打开实验功能</strong>：Copilot app 中打开 Local model auto routing；CLI 用 <code>--experimental</code> 或 <code>/experimental on</code>。</p>
+<p>也可不用 Fusion，而是给 custom agent 指定本地模型。</p>
+<p><strong>这一段宜短，标成预览，避免写成团队默认方案</strong>。本地模型是 public preview，可能变更，且需要实验功能开关。不要把它当成生产方案推荐，除非团队明确要用本地模型。</p>
+<h2 id="和上周五-Gemini-4-文章怎么错开看"><a href="#和上周五-Gemini-4-文章怎么错开看" class="headerlink" title="和上周五 Gemini 4 文章怎么错开看"></a>和上周五 Gemini 4 文章怎么错开看</h2><p>上周五（2026-11-20）已发布《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合》。那篇讲「不要把 Gemini 4 当成一个开关」，本篇讲「不要把 Copilot Fusion 当成 model picker 里的又一个模型」。</p>
+<p>两篇的共同点是：<strong>行业在发模型家族与编排器，而不是一个旗舰开关</strong>。技术负责人在做 2026 年 Q4 与 2027 年 Q1 的模型策略时，不要把「上 Gemini 4」或「上 Fusion」当成决策单元，而要把每个家族拆成任务强度 × 套餐 × 价格的组合，把每个编排器拆成 effort level × 模型策略 × 账单规划的组合。</p>
+<p><strong>不要复述 Carbon &#x2F; Neon &#x2F; Hydrogen 的选型细节</strong>，那是上周五文章的内容。本篇重点是 Fusion 的编排模式、策略配置、折扣截止与榜单解读。</p>
+<p><strong>不要把同日（2026-11-17）另一则 Changelog「OpenAI’s GPT-6.2 Astra and GPT-6.2 Sol now available」写成已经进入 Fusion 模型池</strong>，官方 Fusion 更新没有点这两个名字。</p>
+<h2 id="核验链接（2026-11-23-核对）"><a href="#核验链接（2026-11-23-核对）" class="headerlink" title="核验链接（2026-11-23 核对）"></a>核验链接（2026-11-23 核对）</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://github.blog/changelog/2026-10-28-route-and-orchestrate-models-with-github-copilot-fusion/">GitHub Changelog：Route and orchestrate models with GitHub Copilot Fusion（2026-10-28）</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.blog/changelog/2026-11-17-github-copilot-fusion-updates-more-availability-benchmarks-and-models/">GitHub Changelog：GitHub Copilot Fusion updates: more availability, benchmarks, and models（2026-11-17）</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/concepts/models/copilot-fusion">About GitHub Copilot Fusion（官方概念文档）</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing">Usage-based billing for individuals（个人计费文档）</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.tbench.ai/">Terminal-Bench 4.1 公开榜</a></li>
+</ol>
+<hr>
+<p><strong>孙升隆（SSLoong）</strong>，devloong.com，技术负责人。本文依据截至 2026-11-23 的官方 Changelog 与文档解读，不是本团队产线实测。如官方页与本文有出入，以官方最新页为准。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA/" rel="tag"># 技术负责人</a>
+              <a href="/tags/GitHub-Copilot/" rel="tag"># GitHub Copilot</a>
+              <a href="/tags/Copilot-Fusion/" rel="tag"># Copilot Fusion</a>
+              <a href="/tags/%E6%A8%A1%E5%9E%8B%E7%BC%96%E6%8E%92/" rel="tag"># 模型编排</a>
+              <a href="/tags/%E8%AE%A1%E8%B4%B9/" rel="tag"># 计费</a>
+              <a href="/tags/Terminal-Bench/" rel="tag"># Terminal-Bench</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/11/20/Gemini%204%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E5%9E%8B%EF%BC%9ACarbon%E3%80%81Neon%E3%80%81Hydrogen%E4%B8%80%E5%91%A8%E5%86%85%E5%88%B0%E9%BD%90%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E6%8E%92%E7%BB%84%E5%90%88/" rel="prev" title="Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合">
+                  <i class="fa fa-angle-left"></i> Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/11/25/Claude%20Ship%20%E4%B8%8D%E6%98%AF%E8%87%AA%E5%8A%A8%E5%90%88%E5%B9%B6%EF%BC%9A%E5%AE%A1%E6%9F%A5%E3%80%81%E4%BF%AE%E5%A4%8D%E3%80%81%E5%AE%A1%E6%89%B9%E6%94%BF%E7%AD%96%EF%BC%8C%E6%8A%80%E6%9C%AF%E8%B4%9F%E8%B4%A3%E4%BA%BA%E8%AF%A5%E6%80%8E%E4%B9%88%E5%AE%9A%E8%BE%B9%E7%95%8C/" rel="next" title="Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界">
+                  Claude Ship 不是自动合并：审查、修复、审批政策，技术负责人该怎么定边界 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">八块腹肌的孙先生</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"SSLoong","repo":"blog-comments","client_id":"Ov23liv7PxlsFOW0hJb5","client_secret":"a01e6c6817e6a0c9b0025a23dff6b69f940e1d29","admin_user":"SSLoong","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-CN","body":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"73f637d72b7ae957813c35477ab1140e"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
