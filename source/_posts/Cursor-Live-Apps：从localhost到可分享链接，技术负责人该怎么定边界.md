@@ -1,5 +1,5 @@
 ---
-title: Cursor Live Apps：从 localhost 到可分享链接，技术负责人该怎么定边界
+title: Cursor Live Apps：从 localhost 到可分享链接，默认共享边界才是关键
 date: 2026-11-09 10:00:00
 categories:
   - AI编程

@@ -1,5 +1,5 @@
 ---
-title: Cursor Projects 现已支持多人协作：技术负责人该怎么定共享边界
+title: Cursor Projects 现已支持多人协作：共享的是上下文，不是权限豁免
 date: 2026-11-13 10:00:00
 categories:
   - AI编程

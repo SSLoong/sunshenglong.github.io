@@ -1,5 +1,5 @@
 ---
-title: Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合
+title: Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周到齐，组合不能混着用
 date: 2026-11-20 10:00:00
 categories:
   - AI编程

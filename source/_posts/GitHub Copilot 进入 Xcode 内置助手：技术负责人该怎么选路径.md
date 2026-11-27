@@ -1,5 +1,5 @@
 ---
-title: GitHub Copilot 进入 Xcode 内置助手：技术负责人该怎么选路径
+title: GitHub Copilot 进入 Xcode 内置助手：内置路径和独立工具不是一回事
 date: 2026-11-11 10:00:00
 categories:
   - 客户端
