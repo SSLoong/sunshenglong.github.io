@@ -136,7 +136,7 @@ GitHub 所说「领先 5.4 个百分点」「比 Fable 5.2 便宜 88%、比 Opus
 
 另外，10-28 Changelog 还公布了 **Artificial Analysis Coding Agent Index**：Copilot Fusion Max scored 60, within two points of Claude Code with Opus 5.5 Max；约一半的 average API cost per task，约一半 tokens，每任务约少 40% 时间。**这是 GitHub 在 10-28 Changelog 中的表述，不是我们复核过的第三方页面数字**。若引用，必须写明「GitHub 官方 Changelog 公布，未经本团队复测」，且不要和 Terminal-Bench 4.1 数字混在同一个比较里，因为两者是不同的榜单、不同的评测规则。
 
-同榜还有其他条目（例如 Gemini 4 Carbon (high) / Antigravity CLI 64.5% ± 3.2%）。**不要展开打模型家族战**，以免与上周五文章《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合》重复；如需一句带过，只为说明「同一榜上比的是不同运行时」。
+同榜还有其他条目（例如 Gemini 4 Carbon (high) / Antigravity CLI 64.5% ± 3.2%）。**不要展开打模型家族战**，以免与上周五文章《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周到齐，组合不能混着用》重复；如需一句带过，只为说明「同一榜上比的是不同运行时」。
 
 ## 技术负责人该落地的策略：编排、模型策略、账单与边界
 
