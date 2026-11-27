@@ -217,7 +217,7 @@ Terminal-Bench 4.1 的 71.2% 有决策参考价值，但不能写成「换 Fusio
 
 ## 和上周五 Gemini 4 文章怎么错开看
 
-上周五（2026-11-20）已发布《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周内到齐，技术负责人该怎么排组合》。那篇讲「不要把 Gemini 4 当成一个开关」，本篇讲「不要把 Copilot Fusion 当成 model picker 里的又一个模型」。
+上周五（2026-11-20）已发布《Gemini 4 不是一个模型：Carbon、Neon、Hydrogen 一周到齐，组合不能混着用》。那篇讲「不要把 Gemini 4 当成一个开关」，本篇讲「不要把 Copilot Fusion 当成 model picker 里的又一个模型」。
 
 两篇的共同点是：**行业在发模型家族与编排器，而不是一个旗舰开关**。技术负责人在做 2026 年 Q4 与 2027 年 Q1 的模型策略时，不要把「上 Gemini 4」或「上 Fusion」当成决策单元，而要把每个家族拆成任务强度 × 套餐 × 价格的组合，把每个编排器拆成 effort level × 模型策略 × 账单规划的组合。
 
