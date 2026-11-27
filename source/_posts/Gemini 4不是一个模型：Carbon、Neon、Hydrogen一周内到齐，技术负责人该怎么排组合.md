@@ -112,7 +112,7 @@ GitHub Copilot 定价表（同日核对）中：**GPT-6.2 Astra Default（≤ 27
 
 这说明：**同一周行业在发模型家族，而不是一个旗舰开关**。OpenAI 也不是「只有 GPT-6.2 一个模型」，而是 Astra + Sol 分别对标不同任务强度。技术负责人在做 2026 年 Q4 与 2027 年 Q1 的模型策略时，不要把「上 Gemini 4」或「上 GPT-6.2」当成决策单元，而要把每个家族拆成任务强度 × 套餐 × 价格的组合。
 
-## 技术负责人该怎么排组合
+## Carbon、Neon、Hydrogen、Argon 不能混着用：按任务类型分配组合
 
 ![决策框架:按场景在Carbon、Neon、Hydrogen与Argon之间取舍](/images/gemini-4-family-decision.jpg)
 
